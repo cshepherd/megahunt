@@ -8,29 +8,29 @@
  *  specifies the terms and conditions for redistribution.
  */
 
-# include	<curses.h>
-# include	<ctype.h>
-# include	<signal.h>
-# include	<errno.h>
-# include	"hunt.h"
-# include	<sys/file.h>
+#include	<curses.h>
+#include	<ctype.h>
+#include	<signal.h>
+#include	<errno.h>
+#include	"hunt.h"
+#include	<sys/file.h>
 
-# undef  CTRL
-# define CTRL(x)	('x' & 037)
+#undef  CTRL
+#define CTRL(x)	('x' & 037)
 
 int		input();
 static int	nchar_send;
 static int	in	= FREAD;
 char		screen[24][80], blanks[80];
 int		cur_row, cur_col;
-# ifdef OTTO
+#ifdef OTTO
 int		Otto_count;
 int		Otto_mode;
 static int	otto_y, otto_x;
 static char	otto_face;
-# endif OTTO
+#endif
 
-# define	MAX_SEND	5
+#define	MAX_SEND	5
 
 /*
  * ibuf is the input buffer used for the stream from the driver.
@@ -69,14 +69,14 @@ playit()
 		bad_con();
 		/* NOTREACHED */
 	}
-# ifdef OTTO
+#ifdef OTTO
 	Otto_count = 0;
-# endif OTTO
+#endif
 	nchar_send = MAX_SEND;
 	while ((ch = GETCHR(inf)) != EOF) {
-# ifdef DEBUG
+#ifdef DEBUG
 		fputc(ch, stderr);
-# endif DEBUG
+#endif
 		switch (ch & 0377) {
 		  case MOVE:
 			y = GETCHR(inf);
@@ -87,7 +87,7 @@ playit()
 			break;
 		  case ADDCH:
 			ch = GETCHR(inf);
-# ifdef OTTO
+#ifdef OTTO
 			switch (ch) {
 
 			case '<':
@@ -98,7 +98,7 @@ playit()
 				getyx(stdscr, otto_y, otto_x);
 				break;
 			}
-# endif OTTO
+#endif
 			put_ch(ch);
 			break;
 		  case CLRTOEOL:
@@ -128,21 +128,21 @@ playit()
 			if (nchar_send < 0)
 				(void) ioctl(fileno(stdin), TIOCFLUSH, &in);
 			nchar_send = MAX_SEND;
-# ifndef OTTO
+#ifndef OTTO
 			(void) GETCHR(inf);
-# else OTTO
+#else OTTO
 			Otto_count -= (GETCHR(inf) & 255);
 			if (!Am_monitor) {
-# ifdef DEBUG
+#ifdef DEBUG
 				fputc('0' + Otto_count, stderr);
-# endif DEBUG
+#endif
 				if (Otto_count == 0 && Otto_mode)
 					otto(otto_y, otto_x, otto_face);
 			}
-# endif OTTO
+#endif
 			break;
 		  default:
-# ifdef OTTO
+#ifdef OTTO
 			switch (ch) {
 
 			case '<':
@@ -153,7 +153,7 @@ playit()
 				getyx(stdscr, otto_y, otto_x);
 				break;
 			}
-# endif OTTO
+#endif
 			put_ch(ch);
 			break;
 		}
@@ -188,11 +188,11 @@ one_more_time:
 		errno = 0;
 		readfds = s_readfds;
 		nfds = s_nfds;
-# ifndef OLDIPC
+#ifndef OLDIPC
 		nfds = select(nfds, &readfds, NULL, NULL, NULL);
-# else OLDIPC
+#else OLDIPC
 		nfds = select(nfds, &readfds, (int *) NULL, 32767);
-# endif OLDIPC
+#endif
 	} while (nfds <= 0 && errno == EINTR);
 
 	if (readfds & stdin_mask)
@@ -231,17 +231,17 @@ send_stuff()
 	for (sp = Buf; *sp != '\0'; sp++)
 		if ((*nsp = map_key[*sp]) == 'q')
 			intr();
-# ifdef OTTO
+#ifdef OTTO
 		else if (*nsp == CTRL(O))
 			Otto_mode = !Otto_mode;
-# endif OTTO
+#endif
 		else
 			nsp++;
 	count = nsp - inp;
 	if (count) {
-# ifdef OTTO
+#ifdef OTTO
 		Otto_count += count;
-# endif OTTO
+#endif
 		nchar_send -= count;
 		if (nchar_send < 0)
 			count += nchar_send;
@@ -259,10 +259,10 @@ quit()
 
 	if (Last_player)
 		return TRUE;
-# ifdef OTTO
+#ifdef OTTO
 	if (Otto_mode)
 		return FALSE;
-# endif OTTO
+#endif
 	mvcur(cur_row, cur_col, HEIGHT, 0);
 	cur_row = HEIGHT;
 	cur_col = 0;

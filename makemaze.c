@@ -8,10 +8,10 @@
  *  specifies the terms and conditions for redistribution.
  */
 
-# include	"hunt.h"
+#include	"hunt.h"
 
-# define	ISCLEAR(y,x)	(Maze[y][x] == SPACE)
-# define	ODD(n)		((n) & 01)
+#define	ISCLEAR(y,x)	(Maze[y][x] == SPACE)
+#define	ODD(n)		((n) & 01)
 
 makemaze()
 {
@@ -31,8 +31,8 @@ makemaze()
 	remap();
 }
 
-# define	NPERM	24
-# define	NDIR	4
+#define	NPERM	24
+#define	NDIR	4
 
 int	dirs[NPERM][NDIR] = {
 		{0,1,2,3},	{3,0,1,2},	{0,2,3,1},	{0,3,2,1},
@@ -129,12 +129,12 @@ remap()
 				*sp = WALL2;
 				break;
 			  case 0:
-# ifdef RANDOM
+#ifdef RANDOM
 				*sp = DOOR;
-# endif RANDOM
-# ifdef REFLECT
+#endif
+#ifdef REFLECT
 				*sp = rand_num(2) ? WALL4 : WALL5;
-# endif REFLECT
+#endif
 				break;
 			  default:
 				*sp = WALL3;

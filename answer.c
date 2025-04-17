@@ -8,10 +8,10 @@
  *  specifies the terms and conditions for redistribution.
  */
 
-# include	"hunt.h"
-# include	<errno.h>
+#include	"hunt.h"
+#include	<errno.h>
 
-# define	MAXPERMACH	MAXPL	/* Max player/monitor per machine */
+#define	MAXPERMACH	MAXPL	/* Max player/monitor per machine */
 
 static char	Ttyname[NAMELEN];
 
@@ -20,36 +20,36 @@ answer()
 	register PLAYER		*pp;
 	register int		newsock;
 	register FILE		*tmpfd;
-# ifdef MONITOR
+#ifdef MONITOR
 	static FLAG		monitor;
-# endif MONITOR
+#endif
 	static char		name[NAMELEN];
 	static int		socklen;
 	static u_long		machine;
 	static u_long		uid;
 	static SOCKET		sockstruct;
-# ifdef OLDIPC
+#ifdef OLDIPC
 	extern SOCKET		Daemon;
-# endif OLDIPC
+#endif
 
-# ifdef INTERNET
+#ifdef INTERNET
 	socklen = sizeof sockstruct;
-# else
+#else
 	socklen = sizeof sockstruct - 1;
-# endif INTERNET
+#endif
 	errno = 0;
-# ifndef OLDIPC
+#ifndef OLDIPC
 	if ((newsock = accept(Socket, &sockstruct, &socklen)) < 0)
-# else OLDIPC
+#else /* OLDIPC */
 	if (accept(Socket, &sockstruct) < 0)
-# endif OLDIPC
+#endif
 	{
 		if (errno == EINTR)
 			return;
 		perror("accept");
 		cleanup(1);
 	}
-# ifdef OLDIPC
+#ifdef OLDIPC
 	newsock = Socket;
 	Socket = socket(SOCK_STREAM, 0, (struct sockaddr *) &Daemon,
 		SO_ACCEPTCONN);
@@ -61,36 +61,36 @@ answer()
 	Fds_mask |= Sock_mask;
 	if (Socket >= Num_fds)
 		Num_fds = Socket + 1;
-# endif OLDIPC
+#endif
 
 	tmpfd = fdopen(newsock, "w");
 
-# ifdef INTERNET
+#ifdef INTERNET
 	machine = ntohl(((struct sockaddr_in *) &sockstruct)->sin_addr.s_addr);
-# else INTERNET
+#else /* INTERNET */
 	if (machine == 0)
 		machine = gethostid();
-# endif INTERNET
+#endif
 	(void) putw(getpid(), tmpfd);
 	(void) read(newsock, (char *) &uid, sizeof uid);
 	uid = ntohl(uid);
 	(void) read(newsock, name, NAMELEN);
 	(void) read(newsock, Ttyname, NAMELEN);
-# ifdef MONITOR
+#ifdef MONITOR
 	(void) read(newsock, (char *) &monitor, sizeof monitor);
-# endif MONITOR
+#endif
 
 	if (reached_limit(machine)) {
 		socklen = 0;
 		(void) write(newsock, (char *) &socklen, sizeof socklen);
 		(void) close(newsock);
-# ifdef OLDIPC
+#ifdef OLDIPC
 		Fds_mask &= ~(1 << newsock);
-# endif OLDIPC
+#endif
 		return;
 	}
 
-# ifdef MONITOR
+#ifdef MONITOR
 	if (monitor)
 		if (End_monitor < &Monitor[MAXMON])
 			pp = End_monitor++;
@@ -102,7 +102,7 @@ answer()
 			return;
 		}
 	else
-# endif MONITOR
+#endif
 		if (End_player < &Player[MAXPL])
 			pp = End_player++;
 		else {
@@ -118,24 +118,24 @@ answer()
 	pp->p_death[0] = '\0';
 	pp->p_fd = newsock;
 	pp->p_mask = (1 << pp->p_fd);
-# ifndef OLDIPC
+#ifndef OLDIPC
 	Fds_mask |= pp->p_mask;
 	if (pp->p_fd >= Num_fds)
 		Num_fds = pp->p_fd + 1;
-# endif OLDIPC
+#endif
 
 	pp->p_y = 0;
 	pp->p_x = 0;
 
-# ifdef MONITOR
+#ifdef MONITOR
 	if (monitor)
 		stmonitor(pp);
 	else
-# endif MONITOR
+#endif
 		stplayer(pp);
 }
 
-# ifdef MONITOR
+#ifdef MONITOR
 stmonitor(pp)
 register PLAYER	*pp;
 {
@@ -162,7 +162,7 @@ register PLAYER	*pp;
 	sendcom(pp, READY, 0);
 	(void) fflush(pp->p_output);
 }
-# endif MONITOR
+#endif
 
 stplayer(newpp)
 register PLAYER	*newpp;
@@ -197,16 +197,16 @@ register PLAYER	*newpp;
 	newpp->p_y = y;
 	newpp->p_undershot = FALSE;
 
-# ifdef	START_FLYING
+#ifdef	START_FLYING
 	/* This is only for debugging */
 	newpp->p_flying = rand_num(20);
 	newpp->p_flyx = 2 * rand_num(6) - 5;
 	newpp->p_flyy = 2 * rand_num(6) - 5;
 	newpp->p_face = FLYER;
-# else START_FLYING
+#else START_FLYING
 	newpp->p_flying = -1;
 	rand_face(newpp);
-# endif START_FLYING
+#endif
 	newpp->p_damage = 0;
 	newpp->p_damcap = MAXDAM;
 	newpp->p_nchar = 0;
@@ -224,10 +224,10 @@ register PLAYER	*newpp;
 		} while (Maze[y][x] != SPACE);
 		Maze[y][x] = GMINE;
 	}
-# ifdef MONITOR
+#ifdef MONITOR
 	for (pp = Monitor; pp < End_monitor; pp++)
 		check(pp, y, x);
-# endif MONITOR
+#endif
 
 	for (i=0; i < 4; ++i) {
 		do {
@@ -236,10 +236,10 @@ register PLAYER	*newpp;
 		} while (Maze[y][x] != SPACE);
 		Maze[y][x] = MINE;
 	}
-# ifdef MONITOR
+#ifdef MONITOR
 	for (pp = Monitor; pp < End_monitor; pp++)
 		check(pp, y, x);
-# endif MONITOR
+#endif
 
 	(void) sprintf(Buf, "%5.2f%c%-10.10s", newpp->p_ident->i_score,
 		stat_char(newpp), newpp->p_ident->i_name);
@@ -257,20 +257,20 @@ register PLAYER	*newpp;
 			outstr(pp, smallbuf, 4);
 		}
 	}
-# ifdef MONITOR
+#ifdef MONITOR
 	for (pp = Monitor; pp < End_monitor; pp++) {
 		cgoto(pp, y, STAT_NAME_COL);
 		outstr(pp, Buf, STAT_NAME_LEN);
 	}
-# endif MONITOR
+#endif
 
 	drawmaze(newpp);
 	drawplayer(newpp, TRUE);
 	look(newpp);
-# ifdef START_FLYING
+#ifdef START_FLYING
 	/* Make sure that the position you enter in will be erased */
 	showexpl(newpp->p_y, newpp->p_x, FLYER);
-# endif START_FLYING
+#endif
 	sendcom(newpp, REFRESH);
 	sendcom(newpp, READY, 0);
 	(void) fflush(newpp->p_output);

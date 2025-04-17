@@ -8,7 +8,7 @@
  *  specifies the terms and conditions for redistribution.
  */
 
-# include	"hunt.h"
+#include	"hunt.h"
 
 drawmaze(pp)
 register PLAYER	*pp;
@@ -92,7 +92,7 @@ register PLAYER	*pp;
 		outstr(pp, Buf, STAT_NAME_LEN);
 	}
 
-# ifdef MONITOR
+#ifdef MONITOR
 	cgoto(pp, STAT_MON_ROW, STAT_LABEL_COL);
 	outstr(pp, "Monitor:", 8);
 	for (i = STAT_MON_ROW + 1, np = Monitor; np < End_monitor; np++) {
@@ -100,10 +100,10 @@ register PLAYER	*pp;
 		cgoto(pp, i++, STAT_NAME_COL);
 		outstr(pp, Buf, STAT_NAME_LEN);
 	}
-# endif MONITOR
+#endif
 }
 
-# ifndef CPUHOG
+#ifndef CPUHOG
 look(pp)
 register PLAYER	*pp;
 {
@@ -143,10 +143,10 @@ register PLAYER	*pp;
 		see(pp, LEFTS);
 		see(pp, RIGHT);
 		break;
-# ifdef FLY
+#ifdef FLY
 	  case FLYER:
 		break;
-# endif FLY
+#endif
 	}
 	cgoto(pp, y, x);
 }
@@ -249,7 +249,7 @@ int		face;
 	}
 }
 
-# else CPUHOG
+#else
 
 look(pp)
 register PLAYER	*pp;
@@ -274,7 +274,7 @@ register PLAYER	*pp;
 	}
 	cgoto(pp, pp->p_y, pp->p_x);
 }
-# endif CPUHOG
+#endif
 
 #ifdef UNDEFINED
 #undef check
@@ -313,12 +313,12 @@ register PLAYER	*pp;
 
 	y = STAT_PLAY_ROW + 1 + (pp - Player);
 	c = stat_char(pp);
-# ifdef MONITOR
+#ifdef MONITOR
 	for (np = Monitor; np < End_monitor; np++) {
 		cgoto(np, y, STAT_SCAN_COL);
 		outch(np, c);
 	}
-# endif MONITOR
+#endif
 	for (np = Player; np < End_player; np++) {
 		cgoto(np, y, STAT_SCAN_COL);
 		outch(np, c);
@@ -341,10 +341,10 @@ FLAG	draw;
 	y = pp->p_y;
 	Maze[y][x] = draw ? pp->p_face : pp->p_over;
 
-# ifdef MONITOR
+#ifdef MONITOR
 	for (newp = Monitor; newp < End_monitor; newp++)
 		check(newp, y, x);
-# endif MONITOR
+#endif
 
 	for (newp = Player; newp < End_player; newp++) {
 		if (!draw || newp == pp) {

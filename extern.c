@@ -8,11 +8,11 @@
  *  specifies the terms and conditions for redistribution.
  */
 
-# include	"hunt.h"
+#include	"hunt.h"
 
-# ifdef MONITOR
+#ifdef MONITOR
 FLAG	Am_monitor = FALSE;		/* current process is a monitor */
-# endif MONITOR
+#endif
 
 char	Buf[BUFSIZ];			/* general scribbling buffer */
 char	Maze[HEIGHT][WIDTH2];		/* the maze */
@@ -35,11 +35,11 @@ EXPL	*Expl[EXPLEN];			/* explosion lists */
 PLAYER	Player[MAXPL];			/* all the players */
 PLAYER	*End_player = Player;		/* last active player slot */
 IDENT	*Scores;			/* score cache */
-# ifdef MONITOR
+#ifdef MONITOR
 PLAYER	Monitor[MAXMON];		/* all the monitors */
 PLAYER	*End_monitor = Monitor;		/* last active monitor slot */
-# endif MONITOR
+#endif
 
-# ifdef VOLCANO
+#ifdef VOLCANO
 int	volcano = 0;			/* Explosion size */
-# endif VOLCANO
+#endif

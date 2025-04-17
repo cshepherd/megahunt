@@ -8,8 +8,8 @@
  *  specifies the terms and conditions for redistribution.
  */
 
-# include	"hunt.h"
-# include	<signal.h>
+#include	"hunt.h"
+#include	<signal.h>
 
 do_connect(name)
 char	*name;
@@ -22,7 +22,7 @@ char	*name;
 	(void) write(Socket, name, NAMELEN);
 	(void) strcpy(Buf, ttyname(fileno(stderr)));
 	(void) write(Socket, Buf, NAMELEN);
-# ifdef MONITOR
+#ifdef MONITOR
 	(void) write(Socket, (char *) &Am_monitor, sizeof Am_monitor);
-# endif MONITOR
+#endif
 }

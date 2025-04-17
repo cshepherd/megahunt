@@ -8,32 +8,32 @@
  *  specifies the terms and conditions for redistribution.
  */
 
-# include	"hunt.h"
-# include	<signal.h>
-# include	<errno.h>
-# include	<sys/ioctl.h>
-# include	<sys/time.h>
+#include	"hunt.h"
+#include	<signal.h>
+#include	<errno.h>
+#include	<sys/ioctl.h>
+#include	<sys/time.h>
 
-# ifndef pdp11
-# define	RN	(((Seed = Seed * 11109 + 13849) >> 16) & 0xffff)
-# else pdp11
-# define	RN	((Seed = Seed * 11109 + 13849) & 0x7fff)
-# endif pdp11
+#ifndef pdp11
+#define	RN	(((Seed = Seed * 11109 + 13849) >> 16) & 0xffff)
+#else /* pdp11 */
+#define	RN	((Seed = Seed * 11109 + 13849) & 0x7fff)
+#endif
 
 int	Seed = 0;
 
-# ifdef CONSTANT_MOVE
+#ifdef CONSTANT_MOVE
 static struct itimerval	Timing;
-# endif CONSTANT_MOVE
+#endif
 
 SOCKET	Daemon;
-# ifdef	INTERNET
+#ifdef	INTERNET
 int	Test_socket;		/* test socket to answer datagrams */
-# define	DAEMON_SIZE	(sizeof Daemon)
-# else INTERNET
-# define	DAEMON_SIZE	(sizeof Daemon - 1)
-# endif	INTERNET
-# define	dodam(x, y)	x->p_damage += proxdam(x, y)
+#define	DAEMON_SIZE	(sizeof Daemon)
+#else /* INTERNET */
+#define	DAEMON_SIZE	(sizeof Daemon - 1)
+#endif
+#define	dodam(x, y)	x->p_damage += proxdam(x, y)
 
 /*
  * main:
@@ -43,42 +43,42 @@ main()
 {
 	register PLAYER	*pp;
 	register int	had_char;
-# ifdef INTERNET
+#ifdef INTERNET
 	register long	test_mask;
 	int		msg;
 	int		namelen;
 	SOCKET		test;
-# endif INTERNET
-# ifdef CONSTANT_MOVE
+#endif
+#ifdef CONSTANT_MOVE
 	register int	enable_alarm, disable_alarm;
-# endif CONSTANT_MOVE
+#endif
 	static long	read_fds;
 
 	init();
 	Sock_mask = (1 << Socket);
-# ifdef INTERNET
+#ifdef INTERNET
 	test_mask = (1 << Test_socket);
-# endif INTERNET
+#endif
 
-# ifdef CONSTANT_MOVE
+#ifdef CONSTANT_MOVE
 	enable_alarm = sigblock(0);
 	disable_alarm = enable_alarm | (1 << (SIGALRM - 1));
 	(void) sigsetmask(disable_alarm);
 	(void) signal(SIGALRM, moveshots);
-# endif CONSTANT_MOVE
+#endif
 
 	while (Nplayer > 0) {
-# ifdef CONSTANT_MOVE
+#ifdef CONSTANT_MOVE
 		(void) sigsetmask(enable_alarm);
-# endif CONSTANT_MOVE
+#endif
 		read_fds = Fds_mask;
 		errno = 0;
-# ifndef OLDIPC
+#ifndef OLDIPC
 		while (select(Num_fds, &read_fds, (int *) NULL,
 		    (int *) NULL, (struct timeval *) NULL) < 0)
-# else OLDIPC
+#else OLDIPC
 		while (select(20, &read_fds, NULL, 32767) < 0)
-# endif OLDIPC
+#endif
 		{
 			if (errno != EINTR)
 				perror("select");
@@ -87,25 +87,25 @@ main()
 			errno = 0;
 		}
 		Have_inp = read_fds;
-# ifdef CONSTANT_MOVE
+#ifdef CONSTANT_MOVE
 		(void) sigsetmask(disable_alarm);
-# endif CONSTANT_MOVE
-# ifdef INTERNET
+#endif
+#ifdef INTERNET
 		if (read_fds & test_mask) {
 			namelen = DAEMON_SIZE;
-# ifndef OLDIPC
+#ifndef OLDIPC
 			(void) recvfrom(Test_socket, (char *) &msg, sizeof msg,
 				0, (struct sockaddr *) &test, &namelen);
 			(void) sendto(Test_socket, (char *) &msg, sizeof msg,
 				0, (struct sockaddr *) &test, DAEMON_SIZE);
-# else OLDIPC
+#else OLDIPC
 			(void) receive(Test_socket, (struct sockaddr *) &test,
 				(char *) &msg, sizeof msg);
 			(void) send(Test_socket, (struct sockaddr *) &test,
 				(char *) &msg, sizeof msg);
-# endif OLDIPC
+#endif
 		}
-# endif INTERNET
+#endif
 		for (;;) {
 			had_char = FALSE;
 			for (pp = Player; pp < End_player; pp++)
@@ -114,40 +114,40 @@ main()
 					pp->p_nexec++;
 					had_char++;
 				}
-# ifdef MONITOR
+#ifdef MONITOR
 			for (pp = Monitor; pp < End_monitor; pp++)
 				if (havechar(pp)) {
 					mon_execute(pp);
 					pp->p_nexec++;
 					had_char++;
 				}
-# endif MONITOR
+#endif
 			if (!had_char)
 				break;
-# ifdef CONSTANT_MOVE
+#ifdef CONSTANT_MOVE
 			for (pp = Player; pp < End_player; pp++) {
 				look(pp);
 				sendcom(pp, REFRESH);
 			}
-# ifdef MONITOR
+#ifdef MONITOR
 			for (pp = Monitor; pp < End_monitor; pp++)
 				sendcom(pp, REFRESH);
-# endif MONITOR
-# else CONSTANT_MOVE
+#endif
+#else CONSTANT_MOVE
 			moveshots();
-# endif CONSTANT_MOVE
+#endif
 			for (pp = Player; pp < End_player; )
 				if (pp->p_death[0] != '\0')
 					zap(pp, TRUE);
 				else
 					pp++;
-# ifdef MONITOR
+#ifdef MONITOR
 			for (pp = Monitor; pp < End_monitor; )
 				if (pp->p_death[0] != '\0')
 					zap(pp, FALSE);
 				else
 					pp++;
-# endif MONITOR
+#endif
 		}
 		if (read_fds & Sock_mask)
 			answer();
@@ -157,24 +157,24 @@ main()
 			pp->p_nexec = 0;
 			(void) fflush(pp->p_output);
 		}
-# ifdef MONITOR
+#ifdef MONITOR
 		for (pp = Monitor; pp < End_monitor; pp++) {
 			if (read_fds & pp->p_mask)
 				sendcom(pp, READY, pp->p_nexec);
 			pp->p_nexec = 0;
 			(void) fflush(pp->p_output);
 		}
-# endif MONITOR
+#endif
 	}
 out:
-# ifdef	CONSTANT_MOVE
+#ifdef	CONSTANT_MOVE
 	bul_alarm(0);
-# endif	CONSTANT_MOVE
+#endif
 
-# ifdef MONITOR
+#ifdef MONITOR
 	for (pp = Monitor; pp < End_monitor; )
 		zap(pp, FALSE);
-# endif MONITOR
+#endif
 	cleanup(0);
 }
 
@@ -185,26 +185,26 @@ out:
 init()
 {
 	register int	i;
-# ifdef	INTERNET
+#ifdef	INTERNET
 	SOCKET		test_port;
 	auto int	msg;
-# endif	INTERNET
+#endif
 
-# ifndef DEBUG
+#ifndef DEBUG
 	(void) ioctl(fileno(stdout), TIOCNOTTY, NULL);
 	(void) setpgrp(getpid(), getpid());
 	(void) signal(SIGHUP, SIG_IGN);
 	(void) signal(SIGINT, SIG_IGN);
 	(void) signal(SIGQUIT, SIG_IGN);
 	(void) signal(SIGTERM, cleanup);
-# endif DEBUG
+#endif
 
 	(void) chdir("/usr/tmp");	/* just in case it core dumps */
 	(void) signal(SIGPIPE, SIG_IGN);
 
-# ifdef	INTERNET
+#ifdef	INTERNET
 	Daemon.sin_family = SOCK_FAMILY;
-# ifdef OLD
+#ifdef OLD
 	if (gethostname(local_name, sizeof local_name) < 0) {
 		perror("gethostname");
 		exit(1);
@@ -214,26 +214,26 @@ init()
 		exit(1);
 	}
 	bcopy(hp->h_addr, &(Daemon.sin_addr.s_addr), hp->h_length);
-# else
+#else
 	Daemon.sin_addr.s_addr = INADDR_ANY;
-# endif OLD
+#endif
 	Daemon.sin_port = htons(Sock_port);
-# else INTERNET
+#else /* INTERNET */
 	Daemon.sun_family = SOCK_FAMILY;
 	(void) strcpy(Daemon.sun_path, Sock_name);
-# endif INTERNET
+#endif
 
-# ifndef OLDIPC
+#ifndef OLDIPC
 	Socket = socket(SOCK_FAMILY, SOCK_STREAM, 0);
-# else OLDIPC
+#else OLDIPC
 	Socket = socket(SOCK_STREAM, 0, (struct sockaddr *) &Daemon,
 		SO_ACCEPTCONN);
-# endif OLDIPC
-# if defined(INTERNET) && !defined(OLDIPC)
+#endif
+#if defined(INTERNET) && !defined(OLDIPC)
 	if (setsockopt(Socket, SOL_SOCKET, SO_USELOOPBACK, &msg, sizeof msg)<0)
 		perror("setsockopt loopback");
-# endif INTERNET
-# ifndef OLDIPC
+#endif
+#ifndef OLDIPC
 	if (bind(Socket, (struct sockaddr *) &Daemon, DAEMON_SIZE) < 0) {
 		if (errno == EADDRINUSE)
 			exit(0);
@@ -243,15 +243,15 @@ init()
 		}
 	}
 	(void) listen(Socket, 5);
-# endif OLDIPC
+#endif
 	Fds_mask = (1 << Socket);
 	Num_fds = Socket + 1;
 
-# ifdef INTERNET
+#ifdef INTERNET
 	test_port = Daemon;
 	test_port.sin_port = htons(Test_port);
 
-# ifndef OLDIPC
+#ifndef OLDIPC
 	Test_socket = socket(SOCK_FAMILY, SOCK_DGRAM, 0);
 	if (bind(Test_socket, (struct sockaddr *) &test_port,
 	    DAEMON_SIZE) < 0) {
@@ -259,13 +259,13 @@ init()
 		exit(1);
 	}
 	(void) listen(Test_socket, 5);
-# else OLDIPC
+#else OLDIPC
 	Test_socket = socket(SOCK_DGRAM, 0, (struct sockaddr *) &test_port, 0);
-# endif OLDIPC
+#endif
 	Fds_mask |= (1 << Test_socket);
 	if (Test_socket > Socket)
 		Num_fds = Test_socket + 1;
-# endif	INTERNET
+#endif
 
 	Seed = getpid() + time((time_t *) NULL);
 	makemaze();
@@ -276,24 +276,24 @@ init()
 	See_over[WALL1] = FALSE;
 	See_over[WALL2] = FALSE;
 	See_over[WALL3] = FALSE;
-# ifdef REFLECT
+#ifdef REFLECT
 	See_over[WALL4] = FALSE;
 	See_over[WALL5] = FALSE;
-# endif REFLECT
+#endif
 
-# ifdef CONSTANT_MOVE
+#ifdef CONSTANT_MOVE
 	getitimer(ITIMER_REAL, &Timing);
 	Timing.it_interval.tv_sec = 0;
 	Timing.it_interval.tv_usec = 500;
 	Timing.it_value.tv_sec = 0;
 	Timing.it_value.tv_usec = 0;
 	setitimer(ITIMER_REAL, &Timing, NULL);
-# endif CONSTANT_MOVE
+#endif
 
 	answer();
 }
 
-# ifdef CONSTANT_MOVE
+#ifdef CONSTANT_MOVE
 /*
  * bul_alarm:
  *	Set up the alarm for the bullets
@@ -304,7 +304,7 @@ int	val;
 	Timing.it_value.tv_usec = val * Timing.it_interval.tv_usec;
 	setitimer(ITIMER_REAL, &Timing, NULL);
 }
-# endif CONSTANT_MOVE
+#endif
 
 /*
  * checkdam:
@@ -339,11 +339,11 @@ char		shot_type;
 	  default:
 		cp = "Killed";
 		break;
-# ifdef FLY
+#ifdef FLY
 	  case FALL:
 		cp = "Killed on impact";
 		break;
-# endif FLY
+#endif
 	  case KNIFE:
 		cp = "Stabbed to death";
 		break;
@@ -362,12 +362,12 @@ char		shot_type;
 	  case GMINE:
 		cp = "Blown apart";
 		break;
-# ifdef	OOZE
+#ifdef	OOZE
 	  case SLIME:
 		cp = "Slimed";
 		break;
-# endif OOZE
-# ifdef	VOLCANO
+#endif
+#ifdef	VOLCANO
 	  case BLOB:
 		sprintf(ouch->p_death, "| Eaten by the Blob |");
 		return;
@@ -442,9 +442,9 @@ FLAG		was_player;
 	cgoto(pp, HEIGHT, 0);
 
 	if (Nplayer == 0) {
-# ifdef CONSTANT_MOVE
+#ifdef CONSTANT_MOVE
 		bul_alarm(0);
-# endif CONSTANT_MOVE
+#endif
 		cleanup(0);
 		/* NOTREACHED */
 	}
@@ -452,9 +452,9 @@ FLAG		was_player;
 	savefd = pp->p_fd;
 	savemask = pp->p_mask;
 
-# ifdef MONITOR
+#ifdef MONITOR
 	if (was_player) {
-# endif MONITOR
+#endif
 		for (bp = Bullets; bp != NULL; bp = bp->b_next) {
 			if (bp->b_owner == pp)
 				bp->b_owner = NULL;
@@ -496,13 +496,13 @@ FLAG		was_player;
 				pp->p_ident->i_name);
 			for (np = Player; np < End_player; np++)
 				message(np, Buf);
-# ifdef MONITOR
+#ifdef MONITOR
 			for (np = Monitor; np < End_monitor; np++)
 				message(np, Buf);
-# endif MONITOR
+#endif
 		}
 
-# ifdef VOLCANO
+#ifdef VOLCANO
 		volcano += pp->p_ammo - x;
 #ifdef UNDEFINED
 		if (rand_num(100) < volcano / 50) {
@@ -518,7 +518,7 @@ FLAG		was_player;
 				message(np, "Volcano eruption.");
 			volcano = 0;
 		}
-# endif VOLCANO
+#endif
 
 		sendcom(pp, ENDWIN);
 		(void) fclose(pp->p_output);
@@ -535,12 +535,12 @@ FLAG		was_player;
 				cgoto(np, i, STAT_NAME_COL);
 				outstr(np, Buf, STAT_NAME_LEN);
 			}
-# ifdef MONITOR
+#ifdef MONITOR
 			for (np = Monitor; np < End_monitor; np++) {
 				cgoto(np, i, STAT_NAME_COL);
 				outstr(np, Buf, STAT_NAME_LEN);
 			}
-# endif MONITOR
+#endif
 		}
 
 		/* Erase the last player */
@@ -549,7 +549,7 @@ FLAG		was_player;
 			cgoto(np, i, STAT_NAME_COL);
 			ce(np);
 		}
-# ifdef MONITOR
+#ifdef MONITOR
 		for (np = Monitor; np < End_monitor; np++) {
 			cgoto(np, i, STAT_NAME_COL);
 			ce(np);
@@ -589,23 +589,23 @@ FLAG		was_player;
 		}
 
 	}
-# endif MONITOR
+#endif
 
 	Fds_mask &= ~savemask;
 	if (Num_fds == savefd + 1) {
 		Num_fds = Socket;
-# ifdef INTERNET
+#ifdef INTERNET
 		if (Test_socket > Socket)
 			Num_fds = Test_socket;
-# endif INTERNET
+#endif
 		for (np = Player; np < End_player; np++)
 			if (np->p_fd > Num_fds)
 				Num_fds = np->p_fd;
-# ifdef MONITOR
+#ifdef MONITOR
 		for (np = Monitor; np < End_monitor; np++)
 			if (np->p_fd > Num_fds)
 				Num_fds = np->p_fd;
-# endif MONITOR
+#endif
 		Num_fds++;
 	}
 }
@@ -663,17 +663,17 @@ int	eval;
 		(void) putc(LAST_PLAYER, pp->p_output);
 		(void) fclose(pp->p_output);
 	}
-# ifdef MONITOR
+#ifdef MONITOR
 	for (pp = Monitor; pp < End_monitor; pp++) {
 		cgoto(pp, HEIGHT, 0);
 		sendcom(pp, ENDWIN);
 		(void) putc(LAST_PLAYER, pp->p_output);
 		(void) fclose(pp->p_output);
 	}
-# endif MONITOR
+#endif
 	(void) close(Socket);
-# ifdef AF_UNIX_HACK
+#ifdef AF_UNIX_HACK
 	(void) unlink(Sock_name);
-# endif AF_UNIX_HACK
+#endif
 	exit(eval);
 }

@@ -8,190 +8,190 @@
  *  specifies the terms and conditions for redistribution.
  */
 
-# include	<stdio.h>
-# ifndef OLDIPC
-# include	<sgtty.h>
-# include	<sys/types.h>
-# include	<sys/uio.h>
-# else OLDIPC
-# include	<sys/localopts.h>
-# include	<sys/types.h>
-# include	<sys/netltoshort.h>
-# endif OLDIPC
-# include	<sys/socket.h>
-# ifdef	INTERNET
-# include	<netinet/in.h>
-# include	<netdb.h>
-# ifndef OLDIPC
-# include	<arpa/inet.h>
-# endif !OLDIPC
-# ifdef BROADCAST
-# include	<net/if.h>
-# endif BROADCAST
-# else	INTERNET
-# include	<sys/un.h>
-# endif	INTERNET
+#include	<stdio.h>
+#ifndef OLDIPC
+#include	<sgtty.h>
+#include	<sys/types.h>
+#include	<sys/uio.h>
+#else /* OLDIPC */
+#include	<sys/localopts.h>
+#include	<sys/types.h>
+#include	<sys/netltoshort.h>
+#endif
+#include	<sys/socket.h>
+#ifdef	INTERNET
+#include	<netinet/in.h>
+#include	<netdb.h>
+#ifndef OLDIPC
+#include	<arpa/inet.h>
+#endif
+#ifdef BROADCAST
+#include	<net/if.h>
+#endif
+#else /* INTERNET */
+#include	<sys/un.h>
+#endif
 
-# ifdef	INTERNET
-# define	SOCK_FAMILY	AF_INET
-# else	INTERNET
-# define	SOCK_FAMILY	AF_UNIX
-# define	AF_UNIX_HACK		/* 4.2 hack; leaves files around */
-# endif	INTERNET
+#ifdef	INTERNET
+#define	SOCK_FAMILY	AF_INET
+#else /* INTERNET */
+#define	SOCK_FAMILY	AF_UNIX
+#define	AF_UNIX_HACK		/* 4.2 hack; leaves files around */
+#endif
 
-# define	ADDCH		('a' | 0200)
-# define	MOVE		('m' | 0200)
-# define	REFRESH		('r' | 0200)
-# define	CLRTOEOL	('c' | 0200)
-# define	ENDWIN		('e' | 0200)
-# define	CLEAR		('C' | 0200)
-# define	REDRAW		('R' | 0200)
-# define	LAST_PLAYER	('l' | 0200)
-# define	BELL		('b' | 0200)
-# define	READY		('g' | 0200)
+#define	ADDCH		('a' | 0200)
+#define	MOVE		('m' | 0200)
+#define	REFRESH		('r' | 0200)
+#define	CLRTOEOL	('c' | 0200)
+#define	ENDWIN		('e' | 0200)
+#define	CLEAR		('C' | 0200)
+#define	REDRAW		('R' | 0200)
+#define	LAST_PLAYER	('l' | 0200)
+#define	BELL		('b' | 0200)
+#define	READY		('g' | 0200)
 
 /*
  * Choose MAXPL and MAXMON carefully.  The screen is assumed to be
  * 23 lines high and will only tolerate (MAXPL == 12 && MAXMON == 0)
  * or (MAXPL + MAXMON <= 10).
  */
-# define	MAXPL		9
-# define	PROXMIN		150
-# ifdef MONITOR
-# define	MAXMON		1
-# endif MONITOR
-# define	NAMELEN		20
-# define	MSGLEN		80
-# define	DECAY		50.0
-# define	MINPROXDAM	(PROXMIN*12+(1<<3)-2)
-# define	MAXPROXDAM	(PROXMIN*12+(1<<3)+1)
+#define	MAXPL		9
+#define	PROXMIN		150
+#ifdef MONITOR
+#define	MAXMON		1
+#endif
+#define	NAMELEN		20
+#define	MSGLEN		80
+#define	DECAY		50.0
+#define	MINPROXDAM	(PROXMIN*12+(1<<3)-2)
+#define	MAXPROXDAM	(PROXMIN*12+(1<<3)+1)
 
-# define	NASCII		128
+#define	NASCII		128
 
-# ifndef REFLECT
-# ifndef RANDOM
-# define RANDOM
-# endif RANDOM
-# endif REFLECT
+#ifndef REFLECT
+#ifndef RANDOM
+#define RANDOM
+#endif
+#endif
 
-# define	WIDTH	59
-# define	WIDTH2	64	/* Next power of 2 >= WIDTH (for fast access) */
-# define	HEIGHT	23
-# define	UBOUND	1
-# define	DBOUND	22
-# define	LBOUND	1
-# define	RBOUND	(WIDTH - 1)
+#define	WIDTH	59
+#define	WIDTH2	64	/* Next power of 2 >= WIDTH (for fast access) */
+#define	HEIGHT	23
+#define	UBOUND	1
+#define	DBOUND	22
+#define	LBOUND	1
+#define	RBOUND	(WIDTH - 1)
 
-# define	STAT_LABEL_COL	60
-# define	STAT_VALUE_COL	72
-# define	STAT_NAME_COL	61
-# define	STAT_SCAN_COL	(STAT_NAME_COL + 5)
-# define	STAT_NAME_ROW	0
-# define	STAT_AMMO_ROW	2
-# define	STAT_SCAN_ROW	3
-# define	STAT_CLOAK_ROW	4
-# define	STAT_GUN_ROW	5
-# define	STAT_DAM_ROW	7
-# define	STAT_KILL_ROW	8
-# define	STAT_PLAY_ROW	10
-# ifdef MONITOR
-# define	STAT_MON_ROW	(STAT_PLAY_ROW + MAXPL + 1)
-# endif MONITOR
-# define	STAT_NAME_LEN	16
+#define	STAT_LABEL_COL	60
+#define	STAT_VALUE_COL	72
+#define	STAT_NAME_COL	61
+#define	STAT_SCAN_COL	(STAT_NAME_COL + 5)
+#define	STAT_NAME_ROW	0
+#define	STAT_AMMO_ROW	2
+#define	STAT_SCAN_ROW	3
+#define	STAT_CLOAK_ROW	4
+#define	STAT_GUN_ROW	5
+#define	STAT_DAM_ROW	7
+#define	STAT_KILL_ROW	8
+#define	STAT_PLAY_ROW	10
+#ifdef MONITOR
+#define	STAT_MON_ROW	(STAT_PLAY_ROW + MAXPL + 1)
+#endif
+#define	STAT_NAME_LEN	16
 
-# define	DOOR	'#'
-# define	WALL1	'-'
-# define	WALL2	'|'
-# define	WALL3	'+'
-# ifdef REFLECT
-# define	WALL4	'/'
-# define	WALL5	'\\'
-# endif REFLECT
-# define	KNIFE	'K'
-# define	SHOT	':'
-# define	GRENADE	'o'
-# define	SATCHEL	'O'
-# define	BOMB	'@'
-# define        ABOMB   '.'
-# define	MINE	';'
-# define	GMINE	'g'
-# ifdef	OOZE
-# define	SLIME	'$'
-# endif	OOZE
-# ifdef	VOLCANO
-# define	LAVA	'~'
-# define        BLOB    'b'
-# endif	VOLCANO
-# ifdef FLY
-# define	FALL	'F'
-# endif FLY
-# define	SPACE	' '
+#define	DOOR	'#'
+#define	WALL1	'-'
+#define	WALL2	'|'
+#define	WALL3	'+'
+#ifdef REFLECT
+#define	WALL4	'/'
+#define	WALL5	'\\'
+#endif
+#define	KNIFE	'K'
+#define	SHOT	':'
+#define	GRENADE	'o'
+#define	SATCHEL	'O'
+#define	BOMB	'@'
+#define        ABOMB   '.'
+#define	MINE	';'
+#define	GMINE	'g'
+#ifdef	OOZE
+#define	SLIME	'$'
+#endif
+#ifdef	VOLCANO
+#define	LAVA	'~'
+#define        BLOB    'b'
+#endif
+#ifdef FLY
+#define	FALL	'F'
+#endif
+#define	SPACE	' '
 
-# define	ABOVE	'i'
-# define	BELOW	'!'
-# define	RIGHT	'}'
-# define	LEFTS	'{'
-# ifdef FLY
-# define	FLYER	'&'
-# endif FLY
+#define	ABOVE	'i'
+#define	BELOW	'!'
+#define	RIGHT	'}'
+#define	LEFTS	'{'
+#ifdef FLY
+#define	FLYER	'&'
+#endif
 
-# define	NORTH	01
-# define	SOUTH	02
-# define	EAST	010
-# define	WEST	020
+#define	NORTH	01
+#define	SOUTH	02
+#define	EAST	010
+#define	WEST	020
 
-# ifndef TRUE
-# define	TRUE	1
-# define	FALSE	0
-# endif TRUE
-# ifndef CTRL
-# define	CTRL(x)		('x' & 037)
-# endif CTRL
-# define	func(y)		(xtst(y->i_uid))
+#ifndef TRUE
+#define	TRUE	1
+#define	FALSE	0
+#endif
+#ifndef CTRL
+#define	CTRL(x)		('x' & 037)
+#endif
+#define	func(y)		(xtst(y->i_uid))
 
-# define	BULSPD		5		/* bullets movement speed */
-# define	ISHOTS		1500
-# define	NSHOTS		50
-# define	MAXNCSHOT	2
-# define	MAXDAM		10
-# define	MINDAM		5
-# define	STABDAM		2
+#define	BULSPD		5		/* bullets movement speed */
+#define	ISHOTS		1500
+#define	NSHOTS		50
+#define	MAXNCSHOT	2
+#define	MAXDAM		10
+#define	MINDAM		5
+#define	STABDAM		2
 
-# define	BULREQ		1
-# define	GRENREQ		5
-# define	SATREQ		15
-# define	BOMBREQ		25
-# define        ABOMBREQ        500
-# ifdef	OOZE
-# define	SLIMEREQ	30
-# define	SSLIMEREQ	50
-# define        SSSLIMEREQ      120
-# define	SLIMESPEED	5
-# endif	OOZE
-# ifdef	VOLCANO
-# define        LAVAREQ       300
-# define	LAVASPEED	2
-# define        BLOBREQ		10
-# define        BBLOBREQ	30
-# define        BLOBSPEED	 1
-# endif VOLCANO
+#define	BULREQ		1
+#define	GRENREQ		5
+#define	SATREQ		15
+#define	BOMBREQ		25
+#define        ABOMBREQ        500
+#ifdef	OOZE
+#define	SLIMEREQ	30
+#define	SSLIMEREQ	50
+#define        SSSLIMEREQ      120
+#define	SLIMESPEED	5
+#endif
+#ifdef	VOLCANO
+#define        LAVAREQ       300
+#define	LAVASPEED	2
+#define        BLOBREQ		10
+#define        BBLOBREQ	30
+#define        BLOBSPEED	 1
+#endif
 
-# define	CLOAKLEN	20
-# define	SCANLEN		(Nplayer * 20)
-# define	EXPLEN		4
+#define	CLOAKLEN	20
+#define	SCANLEN		(Nplayer * 20)
+#define	EXPLEN		4
 
-# ifdef FLY
-# define	proxdam(x, y)	(func(x->p_ident) ? (y>>1) : y)
-# define	_cloak_char(pp)	(((pp)->p_cloak < 0) ? ' ' : '+')
-# define	_scan_char(pp)	(((pp)->p_scan < 0) ? _cloak_char(pp) : '*')
-# define	stat_char(pp)	(((pp)->p_flying < 0) ? _scan_char(pp) : FLYER)
-# define	xtst(pp)	(pp == MINPROXDAM || pp == MAXPROXDAM)
-# else FLY
-# define	proxdam(x, y)	(func(x->p_ident) ? (y>>1) : y)
-# define	_cloak_char(pp)	(((pp)->p_cloak < 0) ? ' ' : '+')
-# define	stat_char(pp)	(((pp)->p_scan < 0) ? _cloak_char(pp) : '*')
-# define	xtst(pp)	(pp == MINPROXDAM || pp == MAXPROXDAM)
-# endif FLY
+#ifdef FLY
+#define	proxdam(x, y)	(func(x->p_ident) ? (y>>1) : y)
+#define	_cloak_char(pp)	(((pp)->p_cloak < 0) ? ' ' : '+')
+#define	_scan_char(pp)	(((pp)->p_scan < 0) ? _cloak_char(pp) : '*')
+#define	stat_char(pp)	(((pp)->p_flying < 0) ? _scan_char(pp) : FLYER)
+#define	xtst(pp)	(pp == MINPROXDAM || pp == MAXPROXDAM)
+#else /* FLY */
+#define	proxdam(x, y)	(func(x->p_ident) ? (y>>1) : y)
+#define	_cloak_char(pp)	(((pp)->p_cloak < 0) ? ' ' : '+')
+#define	stat_char(pp)	(((pp)->p_scan < 0) ? _cloak_char(pp) : '*')
+#define	xtst(pp)	(pp == MINPROXDAM || pp == MAXPROXDAM)
+#endif
 
 
 typedef int			FLAG;
@@ -200,11 +200,11 @@ typedef struct expl_def		EXPL;
 typedef struct player_def	PLAYER;
 typedef struct ident_def	IDENT;
 typedef struct regen_def	REGEN;
-# ifdef	INTERNET
+#ifdef	INTERNET
 typedef struct sockaddr_in	SOCKET;
-# else	INTERNET
+#else /* INTERNET */
 typedef struct sockaddr_un	SOCKET;
-# endif	INTERNET
+#endif
 typedef struct sgttyb		TTYB;
 
 struct ident_def {
@@ -222,10 +222,10 @@ struct player_def {
 	int	p_face;
 	char	p_over;
 	int	p_undershot;
-# ifdef	FLY
+#ifdef	FLY
 	int	p_flying;
 	int	p_flyx, p_flyy;
-# endif FLY
+#endif
 	FILE	*p_output;
 	int	p_fd;
 	int	p_mask;
@@ -283,16 +283,16 @@ extern char	*Sock_name, *Driver;
 extern int	errno, Have_inp, Nplayer, Num_fds, Socket;
 extern long	Fds_mask, Sock_mask;
 
-# ifdef INTERNET
+#ifdef INTERNET
 extern int	Test_port;
 extern int	Sock_port;
-# else INTERNET
+#else
 extern char	*Sock_name;
-# endif INTERNET
+#endif
 
-# ifdef VOLCANO
+#ifdef VOLCANO
 extern int	volcano;
-# endif	VOLCANO
+#endif
 
 extern int	See_over[NASCII];
 
@@ -304,10 +304,10 @@ extern IDENT	*Scores;
 
 extern PLAYER	Player[MAXPL], *End_player;
 
-# ifdef MONITOR
+#ifdef MONITOR
 extern FLAG	Am_monitor;
 extern PLAYER	Monitor[MAXMON], *End_monitor;
-# endif MONITOR
+#endif
 
 /*
  * function types

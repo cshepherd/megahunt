@@ -8,33 +8,33 @@
  *  specifies the terms and conditions for redistribution.
  */
 
-# include	<errno.h>
-# include	<curses.h>
-# include	"hunt.h"
-# include	<signal.h>
-# include	<ctype.h>
-# include	<sys/stat.h>
+#include	<errno.h>
+#include	<curses.h>
+#include	"hunt.h"
+#include	<signal.h>
+#include	<ctype.h>
+#include	<sys/stat.h>
 
 FLAG	Last_player = FALSE;
-# ifdef MONITOR
+#ifdef MONITOR
 FLAG	Am_monitor = FALSE;
-# endif MONITOR
+#endif
 FLAG	Query_driver = FALSE;
 
 char	Buf[BUFSIZ];
 
 int	Master_pid;
 int	Socket;
-# ifdef INTERNET
+#ifdef INTERNET
 char	*Sock_host;
-# endif INTERNET
+#endif
 
 SOCKET	Daemon;
-# ifdef	INTERNET
-# define	DAEMON_SIZE	(sizeof Daemon)
-# else	INTERNET
-# define	DAEMON_SIZE	(sizeof Daemon - 1)
-# endif	INTERNET
+#ifdef	INTERNET
+#define	DAEMON_SIZE	(sizeof Daemon)
+#else
+#define	DAEMON_SIZE	(sizeof Daemon - 1)
+#endif
 
 char	map_key[256];			/* what to map keys to */
 
@@ -67,20 +67,20 @@ char	**av;
 			(void) strcpy(name, av[0]);
 			break;
 		case 'o':
-# ifndef OTTO
+#ifndef OTTO
 			fputs("The -o flag is reserved for future use.\n",
 				stderr);
 			goto usage;
-# else OTTO
+#else /* OTTO */
 			Otto_mode = TRUE;
 			break;
-# endif OTTO
-# ifdef MONITOR
+#endif
+#ifdef MONITOR
 		case 'm':
 			Am_monitor = TRUE;
 			break;
-# endif MONITOR
-# ifdef INTERNET
+#endif
+#ifdef INTERNET
 		case 'q':	/* query whether hunt is running */
 			Query_driver = TRUE;
 			break;
@@ -90,38 +90,38 @@ char	**av;
 			ac--, av++;
 			Sock_host = av[0];
 			break;
-# endif INTERNET
+#endif
 		default:
 		usage:
-# ifdef INTERNET
+#ifdef INTERNET
 #  ifdef MONITOR
 #   define	USAGE	"usage: hunt [-q] [-n name] [-h host] [-m]\n"
-#  else MONITOR
+#  else
 #   define	USAGE	"usage: hunt [-q] [-n name] [-h host]\n"
-#  endif MONITOR
-# else INTERNET
+#  endif
+#else /* INTERNET */
 #  ifdef MONITOR
 #   define	USAGE	"usage: hunt [-n name] [-m]\n"
-#  else MONITOR
+#  else
 #   define	USAGE	"usage: hunt [-n name]\n"
-#  endif MONITOR
-# endif INTERNET
+#  endif
+#endif
 			fputs(USAGE, stderr);
-# undef USAGE
+#undef USAGE
 			exit(1);
 		}
 	}
-# ifdef INTERNET
+#ifdef INTERNET
 	if (ac > 1)
 		goto usage;
 	else if (ac > 0)
 		Sock_host = av[0];
-# else INTERNET
+#else /* INTERNET */
 	if (ac > 0)
 		goto usage;
-# endif INTERNET	
+#endif	
 
-# ifdef INTERNET
+#ifdef INTERNET
 	if (Query_driver) {
 		find_driver(FALSE);
 		if (Daemon.sin_port != 0) {
@@ -134,12 +134,12 @@ char	**av;
 		}
 		exit(Daemon.sin_port == 0);
 	}
-# endif INTERNET
-# ifdef OTTO
+#endif
+#ifdef OTTO
 	if (Otto_mode)
 		(void) strcpy(name, "otto");
 	else
-# endif OTTO
+#endif
 	env_init();
 
 	(void) fflush(stdout);
@@ -163,27 +163,27 @@ char	**av;
 	(void) signal(SIGTSTP, tstp);
 
 	do {
-# ifdef	INTERNET
+#ifdef	INTERNET
 		find_driver(TRUE);
 
 		do {
 			int	msg;
 
-# ifndef OLDIPC
+#ifndef OLDIPC
 			Socket = socket(SOCK_FAMILY, SOCK_STREAM, 0);
-# else OLDIPC
+#else /* OLDIPC */
 			Socket = socket(SOCK_STREAM, 0, 0, 0);
-# endif OLDIPC
+#endif
 			if (Socket < 0) {
 				perror("socket");
 				exit(1);
 			}
-# ifndef OLDIPC
+#ifndef OLDIPC
 			msg = 1;
 			if (setsockopt(Socket, SOL_SOCKET, SO_USELOOPBACK,
 			    &msg, sizeof msg) < 0)
 				perror("setsockopt loopback");
-# endif OLDIPC
+#endif
 			errno = 0;
 			if (connect(Socket, (struct sockaddr *) &Daemon,
 			    DAEMON_SIZE) < 0) {
@@ -196,7 +196,7 @@ char	**av;
 				break;
 			sleep(1);
 		} while (close(Socket) == 0);
-# else	INTERNET
+#else	INTERNET
 		/*
 		 * set up a socket
 		 */
@@ -230,7 +230,7 @@ char	**av;
 				sleep(2);
 			} while (connect(Socket, &Daemon, DAEMON_SIZE) < 0);
 		}
-# endif INTERNET
+#endif
 
 		do_connect(name);
 		playit();
@@ -239,8 +239,8 @@ char	**av;
 	/* NOTREACHED */
 }
 
-# ifdef INTERNET
-# ifdef BROADCAST
+#ifdef INTERNET
+#ifdef BROADCAST
 broadcast_vec(s, vector)
 	int			s;		/* socket */
 	struct	sockaddr	**vector;
@@ -265,7 +265,7 @@ broadcast_vec(s, vector)
 						sizeof (struct sockaddr));
 	return vec_cnt;
 }
-# endif BROADCAST
+#endif
 
 find_driver(do_startup)
 FLAG	do_startup;
@@ -280,11 +280,11 @@ FLAG	do_startup;
 	register struct hostent	*hp;
 	int			(*oldsigalrm)(), sigalrm();
 	extern int		errno;
-# ifdef BROADCAST
+#ifdef BROADCAST
 	static	int		brdc;
 	static	SOCKET		*brdv;
 	int			i;
-# endif BROADCAST
+#endif
 
 	if (Sock_host != NULL) {
 		if (!initial)
@@ -303,9 +303,9 @@ FLAG	do_startup;
 
 
 	if (initial) {			/* do one time initialization */
-# ifndef BROADCAST
+#ifndef BROADCAST
 		sethostent(1);		/* don't bother to close host file */
-# endif BROADCAST
+#endif
 		if (gethostname(local_name, sizeof local_name) < 0) {
 			leave(1, "Sorry, I have no name.");
 			/* NOTREACHED */
@@ -321,11 +321,11 @@ FLAG	do_startup;
 		test.sin_port = htons(Test_port);
 	}
 
-# ifndef OLDIPC
+#ifndef OLDIPC
 	test_socket = socket(SOCK_FAMILY, SOCK_DGRAM, 0);
-# else OLDIPC
+#else /* OLDIPC */
 	test_socket = socket(SOCK_DGRAM, 0, 0, 0);
-# endif OLCIPC
+#endif
 	if (test_socket < 0) {
 		perror("socket");
 		leave(1, "socket system call failed");
@@ -337,13 +337,13 @@ FLAG	do_startup;
 		test.sin_family = SOCK_FAMILY;
 		test.sin_addr = Daemon.sin_addr;
 		test.sin_port = htons(Test_port);
-# ifndef OLDIPC
+#ifndef OLDIPC
 		(void) sendto(test_socket, (char *) &msg, sizeof msg, 0,
 		    (struct sockaddr *) &test, DAEMON_SIZE);
-# else OLDIPC
+#else /* OLDIPC */
 		(void) send(test_socket, (struct sockaddr *) &test,
 			(char *) &msg, sizeof msg);
-# endif OLDIPC
+#endif
 		goto get_response;
 	}
 
@@ -356,7 +356,7 @@ FLAG	do_startup;
 	}
 
 
-# ifdef BROADCAST
+#ifdef BROADCAST
 	if (initial)
 		brdc = broadcast_vec(test_socket, &brdv);
 
@@ -386,36 +386,36 @@ FLAG	do_startup;
 			/* NOTREACHED */
 		}
 	}
-# else BROADCAST
+#else BROADCAST
 	/* loop thru all hosts on local net and send msg to them. */
 	sethostent(0);		/* rewind host file */
 	while (hp = gethostent()) {
 		if (inet_netof(test.sin_addr)
 		== inet_netof(* ((struct in_addr *) hp->h_addr))) {
 			test.sin_addr = * ((struct in_addr *) hp->h_addr);
-# ifndef OLDIPC
+#ifndef OLDIPC
 			(void) sendto(test_socket, (char *) &msg, sizeof msg, 0,
 			    (struct sockaddr *) &test, DAEMON_SIZE);
-# else OLDIPC
+#else /* OLDIPC */
 			(void) send(test_socket, (struct sockaddr *) &test,
 				(char *) &msg, sizeof msg);
-# endif OLDIPC
+#endif
 		}
 	}
-# endif BROADCAST
+#endif
 
 get_response:
 	namelen = DAEMON_SIZE;
 	oldsigalrm = signal(SIGALRM, sigalrm);
 	errno = 0;
 	(void) alarm(1);
-# ifndef OLDIPC
+#ifndef OLDIPC
 	if (recvfrom(test_socket, (char *) &msg, sizeof msg, 0,
 	    (struct sockaddr *) &Daemon, &namelen) < 0)
-# else OLDIPC
+#else /* OLDIPC */
 	if (receive(test_socket, (struct sockaddr *) &Daemon, &msg,
 	    sizeof msg) < 0)
-# endif OLDIPC
+#endif
 	{
 		if (errno != EINTR) {
 			perror("recvfrom");
@@ -440,25 +440,25 @@ get_response:
 	(void) close(test_socket);
 	initial = FALSE;
 }
-# endif INTERNET
+#endif
 
 start_driver()
 {
 	register int	procid;
 
-# ifdef MONITOR
+#ifdef MONITOR
 	if (Am_monitor) {
 		leave(1, "No one playing.");
 		/* NOTREACHED */
 	}
-# endif MONITOR
+#endif
 
-# ifdef INTERNET
+#ifdef INTERNET
 	if (Sock_host != NULL) {
 		sleep(3);
 		return 0;
 	}
-# endif INTERNET
+#endif
 
 	mvcur(cur_row, cur_col, 23, 0);
 	cur_row = 23;
@@ -530,7 +530,7 @@ sigemt()
 	/* NOTREACHED */
 }
 
-# ifdef INTERNET
+#ifdef INTERNET
 /*
  * sigalrm:
  *	Handle an alarm signal
@@ -539,7 +539,7 @@ sigalrm()
 {
 	return;
 }
-# endif INTERNET
+#endif
 
 /*
  * rmnl:

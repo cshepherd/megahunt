@@ -8,8 +8,8 @@
  *  specifies the terms and conditions for redistribution.
  */
 
-# include	"hunt.h"
-# define	TERM_WIDTH	80	/* Assume terminals are 80-char wide */
+#include	"hunt.h"
+#define	TERM_WIDTH	80	/* Assume terminals are 80-char wide */
 
 /*
  * cgoto:

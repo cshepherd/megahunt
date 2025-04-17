@@ -14,24 +14,24 @@
  * than then range reserved for privileged sockets.
  */
 
-# ifdef DEBUG
+#ifdef DEBUG
 
 char	*Driver =	"/va/conrad/games/src/hunt/megahunt.driver.dbg";
-# ifdef INTERNET
+#ifdef INTERNET
 int	Test_port =	('h' << 8) | 't';
 int	Sock_port =	('h' << 8) | 's';
-# else INTERNET
+#else /* INTERNET */
 char	*Sock_name =	"/tmp/hunt";
-# endif INTERNET
+#endif
 
-# else DEBUG
+#else DEBUG
 
 char	*Driver =	"/usr/local/lib/hunt.driver";
-# ifdef INTERNET
+#ifdef INTERNET
 int	Test_port =	('h' << 8) | 't';
 int	Sock_port =	('h' << 8) | 's';
-# else INTERNET
+#else /* INTERNET */
 char	*Sock_name =	"/tmp/hunt";
-# endif INTERNET
+#endif
 
-# endif DEBUG
+#endif

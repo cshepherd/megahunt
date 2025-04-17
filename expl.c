@@ -8,7 +8,7 @@
  *  specifies the terms and conditions for redistribution.
  */
 
-# include	"hunt.h"
+#include	"hunt.h"
 
 /*
  * showexpl:
@@ -51,7 +51,7 @@ char		type;
 		cgoto(pp, y, x);
 		outch(pp, type);
 	}
-# ifdef MONITOR
+#ifdef MONITOR
 	for (pp = Monitor; pp < End_monitor; pp++) {
 		if (pp->p_maze[y][x] == type)
 			continue;
@@ -59,27 +59,27 @@ char		type;
 		cgoto(pp, y, x);
 		outch(pp, type);
 	}
-# endif MONITOR
+#endif
 	switch (Maze[y][x]) {
 	  case WALL1:
 	  case WALL2:
 	  case WALL3:
-# ifdef RANDOM
+#ifdef RANDOM
 	  case DOOR:
-# endif RANDOM
-# ifdef REFLECT
+#endif
+#ifdef REFLECT
 	  case WALL4:
 	  case WALL5:
-# endif REFLECT
+#endif
 		if (y >= UBOUND && y < DBOUND && x >= LBOUND && x < RBOUND)
 			remove_wall(y, x);
 		break;
-# ifdef VOLCANO
+#ifdef VOLCANO
 	case BLOB:
 		if (type != BLOB)
 			Maze[y][x] = SPACE;
 		break;
-# endif
+#endif
 	}
 }
 
@@ -110,10 +110,10 @@ rollexpl()
 				cgoto(pp, y, x);
 				outch(pp, c);
 			}
-# ifdef MONITOR
+#ifdef MONITOR
 		for (pp = Monitor; pp < End_monitor; pp++)
 			check(pp, y, x);
-# endif MONITOR
+#endif
 		free((char *) ep);
 	}
 	for (x = EXPLEN - 1; x > 0; x--)
@@ -123,7 +123,7 @@ rollexpl()
 
 /* There's about 700 walls in the initial maze.  So we pick a number
  * that keeps the maze relatively full. */
-# define MAXREMOVE	80
+#define MAXREMOVE	80
 
 static	REGEN	removed[MAXREMOVE];
 static	REGEN	*rem_index = removed;
@@ -137,16 +137,16 @@ remove_wall(y, x)
 int	y, x;
 {
 	register REGEN	*r;
-# if defined(MONITOR) || defined(FLY)
+#if defined(MONITOR) || defined(FLY)
 	register PLAYER	*pp;
-# endif MONITOR || FLY
-# ifdef	FLY
+#endif || FLY
+#ifdef	FLY
 	register char	save_char;
-# endif	FLY
+#endif
 
 	r = rem_index;
 	while (r->r_y != 0) {
-# ifdef FLY
+#ifdef FLY
 		switch (Maze[r->r_y][r->r_x]) {
 		  case SPACE:
 		  case LEFTS:
@@ -157,14 +157,14 @@ int	y, x;
 			save_char = Maze[r->r_y][r->r_x];
 			goto found;
 		}
-# else FLY
+#else FLY
 		if (Maze[r->r_y][r->r_x] == SPACE)
 			break;
-# endif FLY
-# ifdef VOLCANO
+#endif
+#ifdef VOLCANO
 		if (Maze[r->r_y][r->r_x] == BLOB)
 			goto blob;
-# endif
+#endif
 		if (++r >= &removed[MAXREMOVE])
 			r = removed;
 	}
@@ -172,7 +172,7 @@ int	y, x;
 found:
 	if (r->r_y != 0) {
 		/* Slot being used, put back this wall */
-# ifdef FLY
+#ifdef FLY
 		if (save_char == SPACE)
 blob:
 			Maze[r->r_y][r->r_x] = Orig_maze[r->r_y][r->r_x];
@@ -190,22 +190,22 @@ blob:
 			Maze[r->r_y][r->r_x] = FLYER;
 			showexpl(r->r_y, r->r_x, FLYER);
 		}
-# else FLY
+#else FLY
 blob:
 		Maze[r->r_y][r->r_x] = Orig_maze[r->r_y][r->r_x];
-# endif FLY
-# ifdef RANDOM
+#endif
+#ifdef RANDOM
 		if (rand_num(100) == 0)
 			Maze[r->r_y][r->r_x] = DOOR;
-# endif RANDOM
-# ifdef REFLECT
+#endif
+#ifdef REFLECT
 		if (rand_num(100) == 0)		/* one percent of the time */
 			Maze[r->r_y][r->r_x] = WALL4;
-# endif REFLECT
-# ifdef MONITOR
+#endif
+#ifdef MONITOR
 		for (pp = Monitor; pp < End_monitor; pp++)
 			check(pp, r->r_y, r->r_x);
-# endif MONITOR
+#endif
 	}
 
 	r->r_y = y;
@@ -216,8 +216,8 @@ blob:
 		rem_index = r;
 
 	Maze[y][x] = SPACE;
-# ifdef MONITOR
+#ifdef MONITOR
 	for (pp = Monitor; pp < End_monitor; pp++)
 		check(pp, y, x);
-# endif MONITOR
+#endif
 }

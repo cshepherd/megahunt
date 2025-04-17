@@ -8,11 +8,11 @@
  *  specifies the terms and conditions for redistribution.
  */
 
-# include	"hunt.h"
-# include	<signal.h>
+#include	"hunt.h"
+#include	<signal.h>
 
-# define	PLUS_DELTA(x, max)	if (x < max) x++; else x--
-# define	MINUS_DELTA(x, min)	if (x > min) x--; else x++
+#define	PLUS_DELTA(x, max)	if (x < max) x++; else x--
+#define	MINUS_DELTA(x, min)	if (x > min) x--; else x++
 
 /*
  * moveshots:
@@ -46,10 +46,10 @@ moveshots()
 		Maze[y][x] = bp->b_over;
 		for (pp = Player; pp < End_player; pp++)
 			check(pp, y, x);
-# ifdef MONITOR
+#ifdef MONITOR
 		for (pp = Monitor; pp < End_monitor; pp++)
 			check(pp, y, x);
-# endif MONITOR
+#endif
 
 		for (i = 0; i < BULSPD; i++) {
 			if (bp->b_expl)
@@ -87,12 +87,12 @@ moveshots()
 					zapshot(next, bp);
 				}
 				break;
-# ifdef VOLCANO
+#ifdef VOLCANO
 			  case BLOB:
 				bp->b_expl = TRUE;
 				break;
-# endif
-# ifdef	REFLECT
+#endif
+#ifdef	REFLECT
 			  case WALL4:	/* reflecting walls */
 				switch (bp->b_face) {
 				  case LEFTS:
@@ -109,10 +109,10 @@ moveshots()
 					break;
 				}
 				Maze[y][x] = WALL5;
-# ifdef MONITOR
+#ifdef MONITOR
 				for (pp = Monitor; pp < End_monitor; pp++)
 					check(pp, y, x);
-# endif MONITOR
+#endif
 				break;
 			  case WALL5:
 				switch (bp->b_face) {
@@ -130,13 +130,13 @@ moveshots()
 					break;
 				}
 				Maze[y][x] = WALL4;
-# ifdef MONITOR
+#ifdef MONITOR
 				for (pp = Monitor; pp < End_monitor; pp++)
 					check(pp, y, x);
-# endif MONITOR
+#endif
 				break;
-# endif REFLECT
-# ifdef RANDOM
+#endif
+#ifdef RANDOM
 			  case DOOR:
 				switch (rand_num(4)) {
 				  case 0:
@@ -153,14 +153,14 @@ moveshots()
 					break;
 				}
 				break;
-# endif RANDOM
+#endif
 			  case LEFTS:
 			  case RIGHT:
 			  case BELOW:
 			  case ABOVE:
-# ifdef FLY
+#ifdef FLY
 			  case FLYER:
-# endif FLY
+#endif
 				/*
 				 * give the person a chance to catch a
 				 * grenade if s/he is facing it
@@ -182,9 +182,9 @@ moveshots()
 					goto next_bullet;
 				}
 				/* FALLTHROUGH */
-# ifndef RANDOM
+#ifndef RANDOM
 			  case DOOR:
-# endif RANDOM
+#endif
 			  case WALL1:
 			  case WALL2:
 			  case WALL3:
@@ -208,10 +208,10 @@ next_bullet:
 		next = bp->b_next;
 		if (!bp->b_expl) {
 			save_bullet(bp);
-# ifdef MONITOR
+#ifdef MONITOR
 			for (pp = Monitor; pp < End_monitor; pp++)
 				check(pp, bp->b_y, bp->b_x);
-# endif MONITOR
+#endif
 			continue;
 		}
 
@@ -222,7 +222,7 @@ next_bullet:
 		Maze[pp->p_y][pp->p_x] = pp->p_face;
 ret:
 	for (pp = Player; pp < End_player; pp++) {
-# ifdef FLY
+#ifdef FLY
 		if (pp->p_flying >= 0) {
 			Maze[pp->p_y][pp->p_x] = pp->p_over;
 			x = pp->p_x + pp->p_flyx;
@@ -267,13 +267,13 @@ again:			switch (Maze[y][x]) {
 			  case WALL1:
 			  case WALL2:
 			  case WALL3:
-# ifdef	REFLECT
+#ifdef	REFLECT
 			  case WALL4:
 			  case WALL5:
-# endif REFLECT
-# ifdef	RANDOM
+#endif
+#ifdef	RANDOM
 			  case DOOR:
-# endif	RANDOM
+#endif
 				if (pp->p_flying == 0)
 					pp->p_flying++;
 				break;
@@ -299,17 +299,17 @@ again:			switch (Maze[y][x]) {
 			Maze[y][x] = pp->p_face;
 			showexpl(y, x, pp->p_face);
 		}
-# endif FLY
+#endif
 		sendcom(pp, REFRESH);	/* Flush out the explosions */
 		look(pp);
 		sendcom(pp, REFRESH);
 	}
-# ifdef MONITOR
+#ifdef MONITOR
 	for (pp = Monitor; pp < End_monitor; pp++)
 		sendcom(pp, REFRESH);
-# endif MONITOR
+#endif
 
-# ifdef CONSTANT_MOVE
+#ifdef CONSTANT_MOVE
 	if (Bullets != NULL) {
 		bul_alarm(1);
 		return;
@@ -320,7 +320,7 @@ again:			switch (Maze[y][x]) {
 			return;
 		}
 	bul_alarm(0);
-# endif CONSTANT_MOVE
+#endif
 
 	return;
 }
@@ -335,13 +335,13 @@ register BULLET	*bp;
 	  case SATCHEL:
 	  case BOMB:
 	  case ABOMB:
-# ifdef OOZE
+#ifdef OOZE
 	  case SLIME:
-# ifdef VOLCANO
+#ifdef VOLCANO
 	  case BLOB:
 	  case LAVA:
-# endif VOLCANO
-# endif OOZE
+#endif
+#endif
 		find_under(Bullets, bp);
 		break;
 	}
@@ -351,9 +351,9 @@ register BULLET	*bp;
 	  case RIGHT:
 	  case ABOVE:
 	  case BELOW:
-# ifdef FLY
+#ifdef FLY
 	  case FLYER:
-# endif FLY
+#endif
 		mark_player(bp);
 		break;
 		
@@ -397,15 +397,15 @@ register BULLET	*bp;
 	  case ABOMB:
 		delta = 6;
 		break;
-# ifdef	OOZE
+#ifdef	OOZE
 	  case SLIME:
-# ifdef VOLCANO
+#ifdef VOLCANO
 	  case BLOB:
 	  case LAVA:
-# endif VOLCANO
+#endif
 		chkslime(bp);
 		return;
-# endif	OOZE
+#endif
 	}
 	for (y = bp->b_y - delta; y <= bp->b_y + delta; y++) {
 		if (y < 0 || y >= HEIGHT)
@@ -432,9 +432,9 @@ register BULLET	*bp;
 			  case RIGHT:
 			  case ABOVE:
 			  case BELOW:
-# ifdef FLY
+#ifdef FLY
 			  case FLYER:
-# endif FLY
+#endif
 				if (dx < 0)
 					dx = -dx;
 				if (absdy > dx)
@@ -461,7 +461,7 @@ register BULLET	*bp;
 	}
 }
 
-# ifdef	OOZE
+#ifdef	OOZE
 /*
  * chkslime:
  *	handle slime shot exploding
@@ -475,13 +475,13 @@ register BULLET	*bp;
 	  case WALL1:
 	  case WALL2:
 	  case WALL3:
-# ifdef	REFLECT
+#ifdef	REFLECT
 	  case WALL4:
 	  case WALL5:
-# endif REFLECT
-# ifdef	RANDOM
+#endif
+#ifdef	RANDOM
 	  case DOOR:
-# endif	RANDOM
+#endif
 		switch (bp->b_face) {
 		  case LEFTS:
 			bp->b_x++;
@@ -500,7 +500,7 @@ register BULLET	*bp;
 	}
 	nbp = (BULLET *) malloc(sizeof (BULLET));
 	*nbp = *bp;
-# ifdef VOLCANO
+#ifdef VOLCANO
 	switch (nbp->b_type) {
 default:
 case SLIME:  moveslime(nbp, SLIMESPEED);
@@ -510,9 +510,9 @@ case LAVA:   moveslime(nbp, LAVASPEED);
 case BLOB:   moveslime(nbp, BLOBSPEED);
              break;
 	}
-# else VOLCANO
+#else /* VOLCANO */
 	moveslime(nbp, SLIMESPEED);
-# endif VOLCANO
+#endif
 }
 
 /*
@@ -536,7 +536,7 @@ register int	speed;
 		return;
 	}
 
-# ifdef VOLCANO
+#ifdef VOLCANO
 	switch (bp->b_type) {
 default:
 case SLIME:	showexpl(bp->b_y, bp->b_x, '*');
@@ -546,19 +546,19 @@ case LAVA:	showexpl(bp->b_y, bp->b_x, LAVA);
 case BLOB:	showexpl(bp->b_y, bp->b_x, BLOB);
 		break;
 	}
-# else VOLCANO
+#else /* VOLCANO */
 	showexpl(bp->b_y, bp->b_x, '*');
-# endif VOLCANO
+#endif
 	switch (Maze[bp->b_y][bp->b_x]) {
 	  case LEFTS:
 	  case RIGHT:
 	  case ABOVE:
 	  case BELOW:
-# ifdef FLY
+#ifdef FLY
 	  case FLYER:
-# endif FLY
+#endif
 		pp = play_at(bp->b_y, bp->b_x);
-# ifdef VOLCANO
+#ifdef VOLCANO
 		switch (bp->b_type) {
 default:
 case SLIME:		message(pp, "You've been slimed.");
@@ -574,10 +574,10 @@ case BLOB:		message(pp, "Your flesh melts!");
 		else
 			checkdam(pp, bp->b_owner, bp->b_score,
 				MINDAM, bp->b_type);
-# else
+#else
 		message(pp, "You've been slimed.");
 		checkdam(pp, bp->b_owner, bp->b_score, MINDAM, bp->b_type);
-# endif VOLCANO
+#endif
 		break;
 	}
 
@@ -703,22 +703,22 @@ register int	y, x;
 	  case WALL1:
 	  case WALL2:
 	  case WALL3:
-# ifdef	REFLECT
+#ifdef	REFLECT
 	  case WALL4:
 	  case WALL5:
-# endif	REFLECT
-# ifdef	RANDOM
+#endif
+#ifdef	RANDOM
 	  case DOOR:
-# endif	RANDOM
-# ifdef VOLCANO
+#endif
+#ifdef VOLCANO
 	  case LAVA:
 	  case BLOB:
-# endif VOLCANO
+#endif
 		return TRUE;
 	}
 	return FALSE;
 }
-# endif	OOZE
+#endif
 
 /*
  * zapshot:

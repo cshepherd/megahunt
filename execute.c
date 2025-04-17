@@ -8,12 +8,12 @@
  *  specifies the terms and conditions for redistribution.
  */
 
-# include	"hunt.h"
+#include	"hunt.h"
 
-# undef CTRL
-# define	CTRL(x)	('x' & 037)
+#undef CTRL
+#define	CTRL(x)	('x' & 037)
 
-# ifdef MONITOR
+#ifdef MONITOR
 /*
  * mon_execute:
  *	Execute a single monitor command
@@ -33,7 +33,7 @@ register PLAYER	*pp;
 		break;
 	}
 }
-# endif MONITOR
+#endif
 
 /*
  * execute:
@@ -46,7 +46,7 @@ register PLAYER	*pp;
 
 	ch = pp->p_cbuf[pp->p_ncount++];
 
-# ifdef	FLY
+#ifdef	FLY
 	if (pp->p_flying >= 0) {
 		switch (ch) {
 		  case CTRL(L):
@@ -58,7 +58,7 @@ register PLAYER	*pp;
 		}
 		return;
 	}
-# endif	FLY
+#endif
 
 	switch (ch) {
 	  case CTRL(L):
@@ -103,7 +103,7 @@ register PLAYER	*pp;
 	  case 'A':
 		fire(pp, ABOMB);
 		break;
-# ifdef	OOZE
+#ifdef	OOZE
 	  case 'o':
 		fire_slime(pp, SLIME, SLIMEREQ, FALSE);
 		break;
@@ -125,7 +125,7 @@ register PLAYER	*pp;
 		fire_slime(pp, LAVA, LAVAREQ, TRUE);
 		break;
 #  endif
-# endif	OOZE
+#endif
 	  case 's':
 		scan(pp);
 		break;
@@ -172,18 +172,18 @@ int		dir;
 	moved = FALSE;
 	switch (Maze[y][x]) {
 	  case SPACE:
-# ifdef RANDOM
+#ifdef RANDOM
 	  case DOOR:
-# endif RANDOM
+#endif
 		moved = TRUE;
 		break;
 	  case WALL1:
 	  case WALL2:
 	  case WALL3:
-# ifdef REFLECT
+#ifdef REFLECT
 	  case WALL4:
 	  case WALL5:
-# endif REFLECT
+#endif
 		break;
 	  case MINE:
 	  case GMINE:
@@ -219,9 +219,9 @@ int		dir;
 	  case RIGHT:
 	  case ABOVE:
 	  case BELOW:
-# ifdef FLY
+#ifdef FLY
 	  case FLYER:
-# endif FLY
+#endif
 		if (dir != pp->p_face)
 			sendcom(pp, BELL);
 		else {
@@ -302,11 +302,11 @@ register char	type;
 	  case ABOMB:
 		req_index = 4;
 		break;
-# ifdef DEBUG
+#ifdef DEBUG
 	  default:
 		message(pp, "What you do!!!");
 		return;
-# endif DEBUG
+#endif
 	}
 	while (pp->p_ammo < req[req_index])
 		req_index--;
@@ -325,13 +325,13 @@ register char	type;
 	showexpl(pp->p_y, pp->p_x, shot_type[req_index]);
 	for (pp = Player; pp < End_player; pp++)
 		sendcom(pp, REFRESH);
-# ifdef MONITOR
+#ifdef MONITOR
 	for (pp = Monitor; pp < End_monitor; pp++)
 		sendcom(pp, REFRESH);
-# endif MONITOR
+#endif
 }
 
-# ifdef	OOZE
+#ifdef	OOZE
 /*
  * fire_slime:
  *	Fire a slime shot in the given direction
@@ -367,12 +367,12 @@ int expl;
 	showexpl(pp->p_y, pp->p_x, type);
 	for (pp = Player; pp < End_player; pp++)
 		sendcom(pp, REFRESH);
-# ifdef MONITOR
+#ifdef MONITOR
 	for (pp = Monitor; pp < End_monitor; pp++)
 		sendcom(pp, REFRESH);
-# endif MONITOR
+#endif
 }
-# endif	OOZE
+#endif
 
 /*
  * create_shot:
@@ -389,14 +389,14 @@ char	over;
 {
 	register BULLET	*bp;
 
-# ifdef CONSTANT_MOVE
+#ifdef CONSTANT_MOVE
 	/*
 	 * if there are no bullets in flight, set up the alarm
 	 */
 
 	if (Bullets == NULL)
 		bul_alarm(1);
-# endif CONSTANT_MOVE
+#endif
 
 	bp = create_shot(type, y, x, face, charge, owner,
 		(owner == NULL) ? NULL : owner->p_ident, expl, over);
