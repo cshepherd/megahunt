@@ -1,0 +1,17 @@
+cc -O -I. -DRANDOM -DREFLECT -DMONITOR  -DRANDOM -DVOLCANO -DOOZE -DFLY  -c hunt.c
+cc -O -I. -DRANDOM -DREFLECT -DMONITOR  -DRANDOM -DVOLCANO -DOOZE -DFLY  -c connect.c
+cc -O -I. -DRANDOM -DREFLECT -DMONITOR  -DRANDOM -DVOLCANO -DOOZE -DFLY  -c playit.c
+cc -O -I. -DRANDOM -DREFLECT -DMONITOR  -DRANDOM -DVOLCANO -DOOZE -DFLY  -c pathname.c
+cc  -o hunt hunt.o connect.o playit.o pathname.o -lcurses -ltermlib
+cc -O -I. -DRANDOM -DREFLECT -DMONITOR  -DRANDOM -DVOLCANO -DOOZE -DFLY   -c answer.c
+cc -O -I. -DRANDOM -DREFLECT -DMONITOR  -DRANDOM -DVOLCANO -DOOZE -DFLY   -c driver.c
+cc -O -I. -DRANDOM -DREFLECT -DMONITOR  -DRANDOM -DVOLCANO -DOOZE -DFLY   -c draw.c
+cc -O -I. -DRANDOM -DREFLECT -DMONITOR  -DRANDOM -DVOLCANO -DOOZE -DFLY   -c execute.c
+cc -O -I. -DRANDOM -DREFLECT -DMONITOR  -DRANDOM -DVOLCANO -DOOZE -DFLY   -c expl.c
+cc -O -I. -DRANDOM -DREFLECT -DMONITOR  -DRANDOM -DVOLCANO -DOOZE -DFLY   -c makemaze.c
+cc -O -I. -DRANDOM -DREFLECT -DMONITOR  -DRANDOM -DVOLCANO -DOOZE -DFLY   -c shots.c
+cc -O -I. -DRANDOM -DREFLECT -DMONITOR  -DRANDOM -DVOLCANO -DOOZE -DFLY   -c terminal.c
+cc -O -I. -DRANDOM -DREFLECT -DMONITOR  -DRANDOM -DVOLCANO -DOOZE -DFLY   -c extern.c
+cc   -o hunt.driver answer.o driver.o draw.o execute.o expl.o makemaze.o  shots.o terminal.o extern.o pathname.o
+install -s hunt.driver /users/local/games/lib/megahunt.driver
+install -s hunt /users/local/games/megahunt

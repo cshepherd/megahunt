@@ -1,0 +1,51 @@
+If you have an old tcp/ip you might have to turn off the BROADCAST
+option; see the Makefile.
+
+Hunt is not officially supported by anyone anywhere; however, bug
+reports will be read and bug fixes/enhancements may be sent out at
+irregular intervals. Enjoy.
+
+	ucbvax!ucsfcgl!conrad
+	ucsfcgl!conrad@berkeley.edu
+
+
+From: aklietz@ncsa.uiuc.edu (Alan Klietz)
+Message-Id: <8906010002.AA01610@occam.ncsa.uiuc.edu>
+To: hunters@ksuvax1.cis.ksu.edu
+Subject: MegaHunt
+Status: RO
+
+I remember trying to avoid finals back in my undergrad days.   One of
+those days (weeks?) I decided to hack Hunt version 1 into something
+a bit more interesting.  The result was MegaHunt.
+
+	Added the blob (b) (cost 10) and Big Blob (B) (cost 30).  The blob was
+	a slow permanent slime (speed=1).  Walking through it caused 1 point
+	of damage per step.  It could be blasted away.  The blob blocks shots,
+	so it is defensive.  The blob follows you as you walk through it.
+
+	Added the Nuke (A) (cost 500 shots)
+
+	Added super slime (0) (cost 120 shots)
+
+	Doubled the number of initial mines.  Picking up a mine resulted
+	in -10 damage points and +40 shots.  Players can accumulate negative
+	damage points.  It was awesome watching players accumulate -100 damage
+	points and then throw nukes at each other and survive.
+
+	Added the Human Volcano (V) (cost 300).   This is a suicide command, 
+	but effective.
+
+	Changed the check() subroutine into an inline macro - resulted
+	in a 25% speedup.
+
+	Increased MAXREMOVE from 40 to 80, because the nukes were taking
+	out such a huge area that the rebuilds caused excessive teleports.
+
+I still have the source to Megahunt available if you want it.  Note that
+it is a modified copy of version 1 Hunt.  You need 9600 baud (preferrably
+19600 baud +) to really appreciate it.
+
+-Alan Klietz
+-aklietz@ncsa.uiuc.edu
+

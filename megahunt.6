@@ -1,0 +1,67 @@
+
+.TH MEGAHUNT 6
+.SH NAME
+Suped up version of old hunt1
+.SH SYNOPSIS
+.B  megahunt 
+[ options ]
+.SH DESCRIPTION
+.PP
+Megahunt is a suped up version of the first version of hunt.
+Options are the same as the old program, all that differs
+are a few of the commands use to play the game.
+.PP
+The following is from the README the author/modifier included with
+the new sources.
+.PP
+From: aklietz@ncsa.uiuc.edu (Alan Klietz)
+.PP
+Message-Id: <8906010002.AA01610@occam.ncsa.uiuc.edu>
+.PP
+To: hunters@ksuvax1.cis.ksu.edu
+.PP
+Subject: MegaHunt
+.PP
+Status: RO
+
+.PP
+
+I remember trying to avoid finals back in my undergrad days.   One of
+those days (weeks?) I decided to hack Hunt version 1 into something
+a bit more interesting.  The result was MegaHunt.
+
+.PP
+Added the blob (b) (cost 10) and Big Blob (B) (cost 30).  The blob was
+a slow permanent slime (speed=1).  Walking through it caused 1 point
+of damage per step.  It could be blasted away.  The blob blocks shots,
+so it is defensive.  The blob follows you as you walk through it.
+
+.PP
+Added the Nuke (A) (cost 500 shots)
+
+.PP
+Added super slime (0) (cost 120 shots)
+
+.PP
+Doubled the number of initial mines.  Picking up a mine resulted
+in -10 damage points and +40 shots.  Players can accumulate negative
+damage points.  It was awesome watching players accumulate -100 damage
+points and then throw nukes at each other and survive.
+
+.PP
+Added the Human Volcano (V) (cost 300).   This is a suicide command, 
+but effective.
+
+.PP
+Increased MAXREMOVE from 40 to 80, because the nukes were taking
+out such a huge area that the rebuilds caused excessive teleports.
+
+.SH FILES
+Same as old hunt
+.SH "SEE ALSO"
+The manual page for old hunt, of course :-)
+.SH BUGS
+Yes.
+
+.PP 
+This manual page written by David bleckmann (bleckmd@jacobs.cs.orst.edu)
