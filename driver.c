@@ -74,8 +74,8 @@ int main(void)
 		read_fds = Fds_mask;
 		errno = 0;
 #ifndef OLDIPC
-		while (select(Num_fds, &read_fds, (int *) NULL,
-		    (int *) NULL, (struct timeval *) NULL) < 0)
+		while (select(Num_fds, (fd_set *)&read_fds, (fd_set *) NULL,
+		    (fd_set *) NULL, (struct timeval *) NULL) < 0)
 #else /* OLDIPC */
 		while (select(20, &read_fds, NULL, 32767) < 0)
 #endif
@@ -95,7 +95,7 @@ int main(void)
 			namelen = DAEMON_SIZE;
 #ifndef OLDIPC
 			(void) recvfrom(Test_socket, (char *) &msg, sizeof msg,
-				0, (struct sockaddr *) &test, &namelen);
+				0, (struct sockaddr *) &test, (socklen_t *)&namelen);
 			(void) sendto(Test_socket, (char *) &msg, sizeof msg,
 				0, (struct sockaddr *) &test, DAEMON_SIZE);
 #else /* OLDIPC */
