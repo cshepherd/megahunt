@@ -40,8 +40,20 @@ char	map_key[256];			/* what to map keys to */
 
 static char	name[NAMELEN];
 
-extern int	cur_row, cur_col, _putchar();
-extern char	*tgoto();
+extern int	cur_row, cur_col;
+extern int _putchar(int);
+extern char *tgoto(const char *, int, int);
+
+/* Define missing functions and variables */
+int _puts(const char *str) {
+    while (*str)
+        putchar(*str++);
+    return 0;
+}
+
+struct sgttyb _tty;
+int _tty_ch = 0;
+char *CM = NULL;
 
 int find_driver(FLAG do_startup);
 void env_init(void);
@@ -149,12 +161,17 @@ int main(int ac, char **av)
 		exit(1);
 	}
 	int _tty_ch = 0;
+	char *TI, *VS, *VE, *TE;
 	gettmode();
 	setterm(term);
 	noecho();
 	crmode();
-	_puts(TI);
-	_puts(VS);
+	TI = tgetstr("ti", NULL);
+	VS = tgetstr("vs", NULL);
+	VE = tgetstr("ve", NULL);
+	TE = tgetstr("te", NULL);
+	if (TI) _puts(TI);
+	if (VS) _puts(VS);
 	hunt_clear_screen();
 	(void) signal(SIGINT, intr);
 	(void) signal(SIGTERM, sigterm);
@@ -276,7 +293,7 @@ int find_driver(FLAG do_startup)
 	int			test_socket;
 	int			namelen;
 	char			local_name[80];
-	static			initial = TRUE;
+	static int		initial = TRUE;
 	static struct in_addr	local_address;
 	register struct hostent	*hp;
 	void			(*oldsigalrm)(int);
@@ -299,7 +316,7 @@ int find_driver(FLAG do_startup)
 		Daemon.sin_port = htons(Sock_port);
 		Daemon.sin_addr = *((struct in_addr *) hp->h_addr);
 		if (!Query_driver)
-			return;
+			return 1;
 	}
 
 
@@ -359,18 +376,18 @@ int find_driver(FLAG do_startup)
 
 #ifdef BROADCAST
 	if (initial)
-		brdc = broadcast_vec(test_socket, &brdv);
+		brdc = broadcast_vec(test_socket, (struct sockaddr **)&brdv);
 
 	if (brdc <= 0) {
 		Daemon.sin_family = SOCK_FAMILY;
 		Daemon.sin_addr = local_address;
 		Daemon.sin_port = htons(Sock_port);
 		initial = FALSE;
-		return;
+		return 1;
 	}
 
 	if (setsockopt(test_socket, SOL_SOCKET, SO_BROADCAST,
-	    (int) &msg, sizeof msg) < 0) {
+	    &msg, sizeof msg) < 0) {
 		perror("setsockopt broadcast");
 		leave(1, "setsockopt broadcast");
 		/* NOTREACHED */
@@ -387,10 +404,10 @@ int find_driver(FLAG do_startup)
 			/* NOTREACHED */
 		}
 	}
-#else BROADCAST
+#else /* BROADCAST */
 	/* loop thru all hosts on local net and send msg to them. */
 	sethostent(0);		/* rewind host file */
-	while (hp = gethostent()) {
+	while ((hp = gethostent())) {
 		if (inet_netof(test.sin_addr)
 		== inet_netof(* ((struct in_addr *) hp->h_addr))) {
 			test.sin_addr = * ((struct in_addr *) hp->h_addr);
@@ -412,7 +429,7 @@ get_response:
 	(void) alarm(1);
 #ifndef OLDIPC
 	if (recvfrom(test_socket, (char *) &msg, sizeof msg, 0,
-	    (struct sockaddr *) &Daemon, &namelen) < 0)
+	    (struct sockaddr *) &Daemon, (socklen_t *)&namelen) < 0)
 #else /* OLDIPC */
 	if (receive(test_socket, (struct sockaddr *) &Daemon, &msg,
 	    sizeof msg) < 0)
@@ -440,6 +457,7 @@ get_response:
 	}
 	(void) close(test_socket);
 	initial = FALSE;
+	return 1;
 }
 #endif
 
@@ -458,7 +476,7 @@ void start_driver(void)
 #ifdef INTERNET
 	if (Sock_host != NULL) {
 		sleep(3);
-		return 0;
+		return;
 	}
 #endif
 
@@ -467,7 +485,7 @@ void start_driver(void)
 	cur_col = 0;
 	put_str("Starting...");
 	fflush(stdout);
-	procid = vfork();
+	procid = fork(); /* Use fork instead of vfork to avoid deprecation warning */
 	if (procid == -1) {
 		perror("fork");
 		leave(1, "fork failed.");
@@ -485,7 +503,6 @@ void start_driver(void)
 	cur_col = 0;
 	put_str("Connecting...");
 	fflush(stdout);
-	return 0;
 }
 
 /*
@@ -555,9 +572,8 @@ void rmnl(char *s)
 {
 
 	register char	*cp;
-	char		*rindex();
-
-	cp = rindex(s, '\n');
+	
+	cp = strrchr(s, '\n');
 	if (cp != NULL)
 		*cp = '\0';
 }
@@ -628,8 +644,10 @@ void leave(int eval, char *mesg)
 		fflush(stdout);		/* flush in case VE changes pages */
 	} 
 	resetty();
-	_puts(VE);
-	_puts(TE);
+	char *VE = tgetstr("ve", NULL);
+	char *TE = tgetstr("te", NULL);
+	if (VE) _puts(VE);
+	if (TE) _puts(TE);
 	exit(eval);
 }
 
@@ -642,6 +660,7 @@ void tstp(int sig)
 
 	static struct sgttyb	tty;
 	int	y, x;
+	static int _tty_ch;
 
 	tty = _tty;
 	y = cur_row;
@@ -649,16 +668,20 @@ void tstp(int sig)
 	mvcur(cur_row, cur_col, 23, 0);
 	cur_row = 23;
 	cur_col = 0;
-	_puts(VE);
-	_puts(TE);
+	char *VE = tgetstr("ve", NULL);
+	char *TE = tgetstr("te", NULL);
+	if (VE) _puts(VE);
+	if (TE) _puts(TE);
 	(void) fflush(stdout);
 	resetty();
 	(void) kill(getpid(), SIGSTOP);
 	(void) signal(SIGTSTP, tstp);
 	_tty = tty;
 	(void) stty(_tty_ch, &_tty);
-	_puts(TI);
-	_puts(VS);
+	char *TI = tgetstr("ti", NULL);
+	char *VS = tgetstr("vs", NULL);
+	if (TI) _puts(TI);
+	if (VS) _puts(VS);
 	cur_row = y;
 	cur_col = x;
 	_puts(tgoto(CM, cur_row, cur_col));
@@ -670,17 +693,17 @@ void env_init(void)
 {
 
 	register int	i;
-	char	*envp, *envname, *s, *index();
+	char	*envp, *envname, *s;
 
 	for (i = 0; i < 256; i++)
 		map_key[i] = (char) i;
 
 	envname = NULL;
 	if ((envp = getenv("HUNT")) != NULL) {
-		while ((s = index(envp, '=')) != NULL) {
+		while ((s = strchr(envp, '=')) != NULL) {
 			if (strncmp(envp, "name=", s - envp + 1) == 0) {
 				envname = s + 1;
-				if ((s = index(envp, ',')) == NULL) {
+				if ((s = strchr(envp, ',')) == NULL) {
 					*envp = '\0';
 					break;
 				}
@@ -699,7 +722,7 @@ void env_init(void)
 			} else {
 				*s = '\0';
 				printf("unknown option %s\n", envp);
-				if ((s = index(envp, ',')) == NULL) {
+				if ((s = strchr(envp, ',')) == NULL) {
 					*envp = '\0';
 					break;
 				}

@@ -11,11 +11,10 @@
 #include	"hunt.h"
 #include	<signal.h>
 
-do_connect(name)
-char	*name;
+void do_connect(char *name)
 {
 	static long	uid;
-	extern char	*ttyname();
+	extern char	*ttyname(int);
 
 	uid = htonl(getuid());
 	(void) write(Socket, (char *) &uid, sizeof uid);

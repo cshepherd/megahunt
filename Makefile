@@ -56,7 +56,7 @@ standard:	hunt hunt.driver
 debug:	hunt.dbg hunt.driver.dbg
 
 hunt.dbg:	$(POBJ) pathname.dbg.o
-	$(CC) $(LDFLAGS) -o hunt.dbg $(POBJ) pathname.dbg.o -lcurses -ltermlib
+	$(CC) $(LDFLAGS) -o hunt.dbg $(POBJ) pathname.dbg.o -lncurses
 
 hunt.driver.dbg: $(DOBJ) pathname.dbg.o
 	$(CC) $(PROFLAGS) $(LDFLAGS) -o hunt.driver.dbg $(DOBJ) pathname.dbg.o
@@ -86,7 +86,7 @@ install:	standard
 	install -s -o games -g games hunt $(DESTDIR)/megahunt
 
 hunt:	$(POBJ) pathname.o
-	$(CC) $(LDFLAGS) -o hunt $(POBJ) pathname.o -lcurses -ltermlib
+	$(CC) $(LDFLAGS) -o hunt $(POBJ) pathname.o -lncurses
 
 hunt.driver:	$(DOBJ) pathname.o
 	$(CC) $(PROFLAGS) $(LDFLAGS) -o hunt.driver $(DOBJ) pathname.o

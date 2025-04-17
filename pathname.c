@@ -24,7 +24,7 @@ int	Sock_port =	('h' << 8) | 's';
 char	*Sock_name =	"/tmp/hunt";
 #endif
 
-#else DEBUG
+#else /* DEBUG */
 
 char	*Driver =	"/usr/local/lib/hunt.driver";
 #ifdef INTERNET

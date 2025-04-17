@@ -39,7 +39,8 @@ static char	otto_face;
  */
 static char	ibuf[20];
 
-#define	GETCHR(fd)	(--(fd)->_cnt >= 0 ? *(fd)->_ptr++&0377 : getchr(fd))
+/* Modified GETCHR macro to use standard getc instead of direct struct access */
+#define	GETCHR(fd)	(getc(fd))
 
 /*
  * playit:
@@ -53,7 +54,7 @@ void playit(void)
 	register unsigned int	y, x;
 	extern int		Master_pid;
 	extern int		errno;
-	extern int		_putchar();
+	extern int		putchar(int);
 
 	errno = 0;
 	while ((inf = fdopen(Socket, "r")) == NULL)
@@ -105,7 +106,7 @@ void playit(void)
 			clear_eol();
 			break;
 		  case CLEAR:
-			clear_screen();
+			hunt_clear_screen();
 			break;
 		  case REFRESH:
 			fflush(stdout);
@@ -130,7 +131,7 @@ void playit(void)
 			nchar_send = MAX_SEND;
 #ifndef OTTO
 			(void) GETCHR(inf);
-#else OTTO
+#else /* OTTO */
 			Otto_count -= (GETCHR(inf) & 255);
 			if (!Am_monitor) {
 #ifdef DEBUG
@@ -172,13 +173,17 @@ out:
 int getchr(register FILE *fd)
 {
 	long	nchar;
-	long	readfds, s_readfds;
+	fd_set  readfds, s_readfds;
 	int	driver_mask, stdin_mask;
 	int	nfds, s_nfds;
 
-	driver_mask = 1L << fileno(fd);
-	stdin_mask = 1L << fileno(stdin);
-	s_readfds = driver_mask | stdin_mask;
+	FD_ZERO(&readfds);
+	FD_ZERO(&s_readfds);
+	
+	driver_mask = fileno(fd);
+	stdin_mask = fileno(stdin);
+	FD_SET(driver_mask, &s_readfds);
+	FD_SET(stdin_mask, &s_readfds);
 	s_nfds = (driver_mask > stdin_mask) ? driver_mask : stdin_mask;
 	s_nfds++;
 
@@ -189,16 +194,16 @@ one_more_time:
 		nfds = s_nfds;
 #ifndef OLDIPC
 		nfds = select(nfds, &readfds, NULL, NULL, NULL);
-#else OLDIPC
+#else /* OLDIPC */
 		nfds = select(nfds, &readfds, (int *) NULL, 32767);
 #endif
 	} while (nfds <= 0 && errno == EINTR);
 
-	if (readfds & stdin_mask)
+	if (FD_ISSET(stdin_mask, &readfds))
 		send_stuff();
-	if ((readfds & driver_mask) == 0)
+	if (!FD_ISSET(driver_mask, &readfds))
 		goto one_more_time;
-	return _filbuf(fd);
+	return getc(fd);
 }
 
 /*
@@ -229,7 +234,7 @@ void send_stuff(void)
 	nsp = inp;
 	for (sp = Buf; *sp != '\0'; sp++)
 		if ((*nsp = map_key[*sp]) == 'q')
-			intr();
+			intr(SIGINT);
 #ifdef OTTO
 		else if (*nsp == CTRL(O))
 			Otto_mode = !Otto_mode;
@@ -289,6 +294,11 @@ int quit(void)
 
 void put_ch(char ch)
 {
+	extern int LINES, COLS;
+	/* Define terminal capability variables */
+	int AM = 0;  /* Auto margins */
+	int XN = 0;  /* Newline ignored after 80 cols */
+	
 	if (!isprint(ch)) {
 		fprintf(stderr, "r,c,ch: %d,%d,%d", cur_row, cur_col, ch);
 		return;
@@ -313,13 +323,14 @@ void put_str(char *s)
 void hunt_clear_screen(void)
 {
 	register int	i;
-
+	char *CL = NULL;
+	
 	if (blanks[0] == '\0')
 		for (i = 0; i < 80; i++)
 			blanks[i] = ' ';
 
 	if (CL != NULL) {
-		tputs(CL, LINES, _putchar);
+		tputs(CL, LINES, putchar);
 		for (i = 0; i < 24; i++)
 			bcopy(blanks, screen[i], 80);
 	} else {
@@ -336,8 +347,13 @@ void hunt_clear_screen(void)
 
 void clear_eol(void)
 {
+	char *CE = NULL;
+	extern int COLS;
+	/* Define terminal capability variable */
+	int AM = 0;
+	
 	if (CE != NULL)
-		tputs(CE, 1, _putchar);
+		tputs(CE, 1, putchar);
 	else {
 		fwrite(blanks, sizeof (char), 80 - cur_col, stdout);
 		if (COLS != 80)
@@ -356,17 +372,23 @@ void redraw_screen(void)
 	static int	first = 1;
 
 	if (first) {
+		/* Initialize curscr - modern curses doesn't expose struct fields */
 		if ((curscr = newwin(24, 80, 0, 0)) == NULL) {
 			fprintf(stderr, "Can't create curscr\n");
 			exit(1);
 		}
-		for (i = 0; i < 24; i++)
-			curscr->_y[i] = screen[i];
+		
+		/* Copy screen contents into curses window */
+		for (i = 0; i < 24; i++) {
+			mvwaddnstr(curscr, i, 0, screen[i], 80);
+		}
 		first = 0;
 	}
-	curscr->_cury = cur_row;
-	curscr->_curx = cur_col;
+	
+	/* Update cursor position */
+	wmove(curscr, cur_row, cur_col);
 	wrefresh(curscr);
+	
 #ifdef	NOCURSES
 	mvcur(cur_row, cur_col, 0, 0);
 	for (i = 0; i < 23; i++) {
