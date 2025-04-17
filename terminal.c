@@ -16,9 +16,8 @@
  *	Move the cursor to the given position on the given player's
  *	terminal.
  */
-cgoto(pp, y, x)
-register PLAYER	*pp;
-register int	y, x;
+void
+cgoto(PLAYER *pp, int y, int x)
 {
 	if (x == pp->p_curx && y == pp->p_cury)
 		return;
@@ -31,9 +30,8 @@ register int	y, x;
  * outch:
  *	Put out a single character.
  */
-outch(pp, ch)
-register PLAYER	*pp;
-char		ch;
+void
+outch(PLAYER *pp, char ch)
 {
 	if (++pp->p_curx >= TERM_WIDTH) {
 		pp->p_curx = 0;
@@ -46,10 +44,8 @@ char		ch;
  * outstr:
  *	Put out a string of the given length.
  */
-outstr(pp, str, len)
-register PLAYER	*pp;
-register char	*str;
-register int	len;
+void
+outstr(PLAYER *pp, char *str, int len)
 {
 	pp->p_curx += len;
 	pp->p_cury += (pp->p_curx / TERM_WIDTH);
@@ -62,10 +58,10 @@ register int	len;
  * clrscr:
  *	Clear the screen, and reset the current position on the screen.
  */
-clrscr(pp)
-register PLAYER	*pp;
+void
+clrscr(PLAYER *pp)
 {
-	sendcom(pp, CLEAR);
+	sendcom(pp, CLEAR, 0, 0);
 	pp->p_cury = 0;
 	pp->p_curx = 0;
 }
@@ -74,20 +70,20 @@ register PLAYER	*pp;
  * ce:
  *	Clear to the end of the line
  */
-ce(pp)
-PLAYER	*pp;
+void
+ce(PLAYER *pp)
 {
-	sendcom(pp, CLRTOEOL);
+	sendcom(pp, CLRTOEOL, 0, 0);
 }
 
 /*
  * ref;
  *	Refresh the screen
  */
-ref(pp)
-register PLAYER	*pp;
+void
+ref(PLAYER *pp)
 {
-	sendcom(pp, REFRESH);
+	sendcom(pp, REFRESH, 0, 0);
 }
 
 /*
@@ -95,10 +91,8 @@ register PLAYER	*pp;
  *	Send a command to the given user
  */
 /* VARARGS2 */
-sendcom(pp, command, arg1, arg2)
-register PLAYER		*pp;
-register int	command;
-int			arg1, arg2;
+void
+sendcom(PLAYER *pp, int command, int arg1, int arg2)
 {
 	(void) putc(command, pp->p_output);
 	switch (command & 0377) {

@@ -300,13 +300,13 @@ again:			switch (Maze[y][x]) {
 			showexpl(y, x, pp->p_face);
 		}
 #endif
-		sendcom(pp, REFRESH);	/* Flush out the explosions */
+		sendcom(pp, REFRESH, 0, 0);	/* Flush out the explosions */
 		look(pp);
-		sendcom(pp, REFRESH);
+		sendcom(pp, REFRESH, 0, 0);
 	}
 #ifdef MONITOR
 	for (pp = Monitor; pp < End_monitor; pp++)
-		sendcom(pp, REFRESH);
+		sendcom(pp, REFRESH, 0, 0);
 #endif
 
 #ifdef CONSTANT_MOVE

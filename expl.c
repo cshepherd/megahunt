@@ -136,7 +136,7 @@ void remove_wall(int y, int x)
 	register REGEN	*r;
 #if defined(MONITOR) || defined(FLY)
 	register PLAYER	*pp;
-#endif || FLY
+#endif /* || FLY */
 #ifdef	FLY
 	register char	save_char;
 #endif
@@ -154,7 +154,7 @@ void remove_wall(int y, int x)
 			save_char = Maze[r->r_y][r->r_x];
 			goto found;
 		}
-#else FLY
+#else /* FLY */
 		if (Maze[r->r_y][r->r_x] == SPACE)
 			break;
 #endif
@@ -187,7 +187,7 @@ blob:
 			Maze[r->r_y][r->r_x] = FLYER;
 			showexpl(r->r_y, r->r_x, FLYER);
 		}
-#else FLY
+#else /* FLY */
 blob:
 		Maze[r->r_y][r->r_x] = Orig_maze[r->r_y][r->r_x];
 #endif

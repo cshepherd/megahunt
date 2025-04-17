@@ -10,8 +10,8 @@
 
 #include	"hunt.h"
 
-drawmaze(pp)
-register PLAYER	*pp;
+void
+drawmaze(PLAYER *pp)
 {
 	register int	x;
 	register char	*sp;
@@ -40,8 +40,8 @@ register PLAYER	*pp;
  * drawstatus - put up the status lines (this assumes the screen
  *		size is 80x24 with the maze being 64x24)
  */
-drawstatus(pp)
-register PLAYER	*pp;
+void
+drawstatus(PLAYER *pp)
 {
 	register int	i;
 	register PLAYER	*np;
@@ -104,8 +104,8 @@ register PLAYER	*pp;
 }
 
 #ifndef CPUHOG
-look(pp)
-register PLAYER	*pp;
+void
+look(PLAYER *pp)
 {
 	register int	x, y;
 
@@ -151,9 +151,8 @@ register PLAYER	*pp;
 	cgoto(pp, y, x);
 }
 
-see(pp, face)
-register PLAYER	*pp;
-int		face;
+void
+see(PLAYER *pp, int face)
 {
 	register char	*sp;
 	register int	y, x, i, cnt;
@@ -304,8 +303,8 @@ int	y, x;
  * showstat
  *	Update the status of players
  */
-showstat(pp)
-register PLAYER	*pp;
+void
+showstat(PLAYER *pp)
 {
 	register PLAYER	*np;
 	register int	y;
@@ -330,9 +329,8 @@ register PLAYER	*pp;
  *	Draw the player on the screen and show him to everyone who's scanning
  *	unless he is cloaked.
  */
-drawplayer(pp, draw)
-PLAYER	*pp;
-FLAG	draw;
+void
+drawplayer(PLAYER *pp, FLAG draw)
 {
 	register PLAYER	*newp;
 	register int	x, y;
@@ -372,9 +370,8 @@ FLAG	draw;
 	}
 }
 
-message(pp, s)
-register PLAYER	*pp;
-char		*s;
+void
+message(PLAYER *pp, char *s)
 {
 	cgoto(pp, HEIGHT, 0);
 	outstr(pp, s, strlen(s));
@@ -386,8 +383,8 @@ char		*s;
  *	Turn a charcter into the right direction character if we are
  *	looking at the current player.
  */
-translate(ch)
-char	ch;
+char
+translate(char ch)
 {
 	switch (ch) {
 	  case LEFTS:

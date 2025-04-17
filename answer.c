@@ -15,7 +15,8 @@
 
 static char	Ttyname[NAMELEN];
 
-answer()
+void
+answer(void)
 {
 	register PLAYER		*pp;
 	register int		newsock;
@@ -39,7 +40,7 @@ answer()
 #endif
 	errno = 0;
 #ifndef OLDIPC
-	if ((newsock = accept(Socket, &sockstruct, &socklen)) < 0)
+	if ((newsock = accept(Socket, (struct sockaddr *)&sockstruct, (socklen_t *)&socklen)) < 0)
 #else /* OLDIPC */
 	if (accept(Socket, &sockstruct) < 0)
 #endif
@@ -136,8 +137,8 @@ answer()
 }
 
 #ifdef MONITOR
-stmonitor(pp)
-register PLAYER	*pp;
+void
+stmonitor(PLAYER *pp)
 {
 	register int	line;
 	register PLAYER	*npp;
@@ -158,14 +159,14 @@ register PLAYER	*pp;
 		outstr(npp, Buf, STAT_NAME_LEN);
 	}
 
-	sendcom(pp, REFRESH);
-	sendcom(pp, READY, 0);
+	sendcom(pp, REFRESH, 0, 0);
+	sendcom(pp, READY, 0, 0);
 	(void) fflush(pp->p_output);
 }
 #endif
 
-stplayer(newpp)
-register PLAYER	*newpp;
+void
+stplayer(PLAYER *newpp)
 {
 	register int	x, y;
 	register PLAYER	*pp;
@@ -203,7 +204,7 @@ register PLAYER	*newpp;
 	newpp->p_flyx = 2 * rand_num(6) - 5;
 	newpp->p_flyy = 2 * rand_num(6) - 5;
 	newpp->p_face = FLYER;
-#else START_FLYING
+#else /* START_FLYING */
 	newpp->p_flying = -1;
 	rand_face(newpp);
 #endif
@@ -271,8 +272,8 @@ register PLAYER	*newpp;
 	/* Make sure that the position you enter in will be erased */
 	showexpl(newpp->p_y, newpp->p_x, FLYER);
 #endif
-	sendcom(newpp, REFRESH);
-	sendcom(newpp, READY, 0);
+	sendcom(newpp, REFRESH, 0, 0);
+	sendcom(newpp, READY, 0, 0);
 	(void) fflush(newpp->p_output);
 }
 
@@ -280,8 +281,8 @@ register PLAYER	*newpp;
  * rand_face:
  *	Give the player a random facing direction
  */
-rand_face(pp)
-register PLAYER	*pp;
+void
+rand_face(PLAYER *pp)
 {
 	switch (rand_num(4)) {
 	  case 0:
@@ -304,10 +305,7 @@ register PLAYER	*pp;
  *	Get the score structure of a player
  */
 IDENT *
-get_ident(machine, uid, name)
-u_long	machine;
-u_long	uid;
-char	*name;
+get_ident(u_long machine, u_long uid, char *name)
 {
 	register IDENT	*ip;
 	static IDENT	punt;
@@ -344,8 +342,8 @@ char	*name;
  * reached_limit:
  *	Returns whether the limit of x persons per machine has been reached
  */
-reached_limit(machine)
-u_long	machine;
+int
+reached_limit(u_long machine)
 {
 	register PLAYER	*pp;
 	register int	count;

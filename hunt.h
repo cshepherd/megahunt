@@ -433,7 +433,7 @@ char translate(char ch);
 void do_connect(char *name);
 
 /* other file prototypes */
-IDENT *get_ident(void);
+IDENT *get_ident(u_long machine, u_long uid, char *name);
 
 #define check(_pp,_y,_x)  \
 { \

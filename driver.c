@@ -76,7 +76,7 @@ int main(void)
 #ifndef OLDIPC
 		while (select(Num_fds, &read_fds, (int *) NULL,
 		    (int *) NULL, (struct timeval *) NULL) < 0)
-#else OLDIPC
+#else /* OLDIPC */
 		while (select(20, &read_fds, NULL, 32767) < 0)
 #endif
 		{
@@ -98,7 +98,7 @@ int main(void)
 				0, (struct sockaddr *) &test, &namelen);
 			(void) sendto(Test_socket, (char *) &msg, sizeof msg,
 				0, (struct sockaddr *) &test, DAEMON_SIZE);
-#else OLDIPC
+#else /* OLDIPC */
 			(void) receive(Test_socket, (struct sockaddr *) &test,
 				(char *) &msg, sizeof msg);
 			(void) send(Test_socket, (struct sockaddr *) &test,
@@ -127,13 +127,13 @@ int main(void)
 #ifdef CONSTANT_MOVE
 			for (pp = Player; pp < End_player; pp++) {
 				look(pp);
-				sendcom(pp, REFRESH);
+				sendcom(pp, REFRESH, 0, 0);
 			}
 #ifdef MONITOR
 			for (pp = Monitor; pp < End_monitor; pp++)
-				sendcom(pp, REFRESH);
+				sendcom(pp, REFRESH, 0, 0);
 #endif
-#else CONSTANT_MOVE
+#else /* CONSTANT_MOVE */
 			moveshots();
 #endif
 			for (pp = Player; pp < End_player; )
@@ -153,14 +153,14 @@ int main(void)
 			answer();
 		for (pp = Player; pp < End_player; pp++) {
 			if (read_fds & pp->p_mask)
-				sendcom(pp, READY, pp->p_nexec);
+				sendcom(pp, READY, pp->p_nexec, 0);
 			pp->p_nexec = 0;
 			(void) fflush(pp->p_output);
 		}
 #ifdef MONITOR
 		for (pp = Monitor; pp < End_monitor; pp++) {
 			if (read_fds & pp->p_mask)
-				sendcom(pp, READY, pp->p_nexec);
+				sendcom(pp, READY, pp->p_nexec, 0);
 			pp->p_nexec = 0;
 			(void) fflush(pp->p_output);
 		}
@@ -182,7 +182,8 @@ out:
  * init:
  *	Initialize the global parameters.
  */
-init()
+void
+init(void)
 {
 	register int	i;
 #ifdef	INTERNET
@@ -192,7 +193,7 @@ init()
 
 #ifndef DEBUG
 	(void) ioctl(fileno(stdout), TIOCNOTTY, NULL);
-	(void) setpgrp(getpid(), getpid());
+	(void) setpgrp();
 	(void) signal(SIGHUP, SIG_IGN);
 	(void) signal(SIGINT, SIG_IGN);
 	(void) signal(SIGQUIT, SIG_IGN);
@@ -225,7 +226,7 @@ init()
 
 #ifndef OLDIPC
 	Socket = socket(SOCK_FAMILY, SOCK_STREAM, 0);
-#else OLDIPC
+#else /* OLDIPC */
 	Socket = socket(SOCK_STREAM, 0, (struct sockaddr *) &Daemon,
 		SO_ACCEPTCONN);
 #endif
@@ -259,7 +260,7 @@ init()
 		exit(1);
 	}
 	(void) listen(Test_socket, 5);
-#else OLDIPC
+#else /* OLDIPC */
 	Test_socket = socket(SOCK_DGRAM, 0, (struct sockaddr *) &test_port, 0);
 #endif
 	Fds_mask |= (1 << Test_socket);
@@ -298,8 +299,8 @@ init()
  * bul_alarm:
  *	Set up the alarm for the bullets
  */
-bul_alarm(val)
-int	val;
+void
+bul_alarm(int val)
 {
 	Timing.it_value.tv_usec = val * Timing.it_interval.tv_usec;
 	setitimer(ITIMER_REAL, &Timing, NULL);
@@ -310,11 +311,8 @@ int	val;
  * checkdam:
  *	Check the damage to the given player, and see if s/he is killed
  */
-checkdam(ouch, gotcha, credit, amt, shot_type)
-register PLAYER	*ouch, *gotcha;
-register IDENT	*credit;
-int		amt;
-char		shot_type;
+void
+checkdam(PLAYER *ouch, PLAYER *gotcha, IDENT *credit, int amt, char shot_type)
 {
 	register char	*cp;
 
@@ -412,9 +410,8 @@ Not wanted 'cause -damage is possible now */
  * zap:
  *	Kill off a player and take him out of the game.
  */
-zap(pp, was_player)
-register PLAYER	*pp;
-FLAG		was_player;
+void
+zap(PLAYER *pp, FLAG was_player)
 {
 	register int	i, len;
 	register BULLET	*bp;
@@ -520,7 +517,7 @@ FLAG		was_player;
 		}
 #endif
 
-		sendcom(pp, ENDWIN);
+		sendcom(pp, ENDWIN, 0, 0);
 		(void) fclose(pp->p_output);
 
 		End_player--;
@@ -556,7 +553,7 @@ FLAG		was_player;
 		}
 	}
 	else {
-		sendcom(pp, ENDWIN);
+		sendcom(pp, ENDWIN, 0, 0);
 		(void) putc(LAST_PLAYER, pp->p_output);
 		(void) fclose(pp->p_output);
 
@@ -614,8 +611,8 @@ FLAG		was_player;
  * rand_num:
  *	Return a random number in a given range.
  */
-rand_num(range)
-int	range;
+int
+rand_num(int range)
 {
 	return (range == 0 ? 0 : RN % range);
 }
@@ -626,8 +623,8 @@ int	range;
  *	we do, read them, stash them away, and return TRUE; else return
  *	FALSE.
  */
-havechar(pp)
-register PLAYER	*pp;
+int
+havechar(PLAYER *pp)
 {
 	extern int	errno;
 
@@ -652,21 +649,21 @@ check_again:
  * cleanup:
  *	Exit with the given value, cleaning up any droppings lying around
  */
-cleanup(eval)
-int	eval;
+void
+cleanup(int eval)
 {
 	register PLAYER	*pp;
 
 	for (pp = Player; pp < End_player; pp++) {
 		cgoto(pp, HEIGHT, 0);
-		sendcom(pp, ENDWIN);
+		sendcom(pp, ENDWIN, 0, 0);
 		(void) putc(LAST_PLAYER, pp->p_output);
 		(void) fclose(pp->p_output);
 	}
 #ifdef MONITOR
 	for (pp = Monitor; pp < End_monitor; pp++) {
 		cgoto(pp, HEIGHT, 0);
-		sendcom(pp, ENDWIN);
+		sendcom(pp, ENDWIN, 0, 0);
 		(void) putc(LAST_PLAYER, pp->p_output);
 		(void) fclose(pp->p_output);
 	}

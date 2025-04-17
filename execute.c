@@ -18,15 +18,15 @@
  * mon_execute:
  *	Execute a single monitor command
  */
-mon_execute(pp)
-register PLAYER	*pp;
+void
+mon_execute(PLAYER *pp)
 {
 	register char	ch;
 
 	ch = pp->p_cbuf[pp->p_ncount++];
 	switch (ch) {
 	  case CTRL(L):
-		sendcom(pp, REDRAW);
+		sendcom(pp, REDRAW, 0, 0);
 		break;
 	  case 'q':
 		(void) strcpy(pp->p_death, "| Quit |");
@@ -39,8 +39,8 @@ register PLAYER	*pp;
  * execute:
  *	Execute a single command
  */
-execute(pp)
-register PLAYER	*pp;
+void
+execute(PLAYER *pp)
 {
 	register char	ch;
 
@@ -50,7 +50,7 @@ register PLAYER	*pp;
 	if (pp->p_flying >= 0) {
 		switch (ch) {
 		  case CTRL(L):
-			sendcom(pp, REDRAW);
+			sendcom(pp, REDRAW, 0, 0);
 			break;
 		  case 'q':
 			(void) strcpy(pp->p_death, "| Quit |");
@@ -62,28 +62,28 @@ register PLAYER	*pp;
 
 	switch (ch) {
 	  case CTRL(L):
-		sendcom(pp, REDRAW);
+		sendcom(pp, REDRAW, 0, 0);
 		break;
 	  case 'h':
-		move(pp, LEFTS);
+		player_move(pp, LEFTS);
 		break;
 	  case 'H':
 		face(pp, LEFTS);
 		break;
 	  case 'j':
-		move(pp, BELOW);
+		player_move(pp, BELOW);
 		break;
 	  case 'J':
 		face(pp, BELOW);
 		break;
 	  case 'k':
-		move(pp, ABOVE);
+		player_move(pp, ABOVE);
 		break;
 	  case 'K':
 		face(pp, ABOVE);
 		break;
 	  case 'l':
-		move(pp, RIGHT);
+		player_move(pp, RIGHT);
 		break;
 	  case 'L':
 		face(pp, RIGHT);
@@ -142,9 +142,8 @@ register PLAYER	*pp;
  * move:
  *	Execute a move in the given direction
  */
-move(pp, dir)
-register PLAYER	*pp;
-int		dir;
+void
+player_move(PLAYER *pp, int dir)
 {
 	register PLAYER	*newp;
 	register int	x, y;
@@ -223,7 +222,7 @@ int		dir;
 	  case FLYER:
 #endif
 		if (dir != pp->p_face)
-			sendcom(pp, BELL);
+			sendcom(pp, BELL, 0, 0);
 		else {
 			newp = play_at(y, x);
 			checkdam(newp, pp, pp->p_ident, STABDAM, KNIFE);
@@ -252,9 +251,8 @@ int		dir;
  * face:
  *	Change the direction the player is facing
  */
-face(pp, dir)
-register PLAYER	*pp;
-register int	dir;
+void
+face(PLAYER *pp, int dir)
 {
 	if (pp->p_face != dir) {
 		pp->p_face = dir;
@@ -266,9 +264,8 @@ register int	dir;
  * fire:
  *	Fire a shot of the given type in the given direction
  */
-fire(pp, type)
-register PLAYER	*pp;
-register char	type;
+void
+fire(PLAYER *pp, char type)
 {
 	register int	req_index;
 	static int	req[5] = { BULREQ, GRENREQ, SATREQ, BOMBREQ, ABOMBREQ };
@@ -324,10 +321,10 @@ register char	type;
 	 */
 	showexpl(pp->p_y, pp->p_x, shot_type[req_index]);
 	for (pp = Player; pp < End_player; pp++)
-		sendcom(pp, REFRESH);
+		sendcom(pp, REFRESH, 0, 0);
 #ifdef MONITOR
 	for (pp = Monitor; pp < End_monitor; pp++)
-		sendcom(pp, REFRESH);
+		sendcom(pp, REFRESH, 0, 0);
 #endif
 }
 
@@ -336,11 +333,8 @@ register char	type;
  * fire_slime:
  *	Fire a slime shot in the given direction
  */
-fire_slime(pp, type, req, expl)
-register PLAYER	*pp;
-register int type;
-register int	req;
-int expl;
+void
+fire_slime(PLAYER *pp, int type, int req, int expl)
 {
 	if (pp == NULL)
 		return;
@@ -366,10 +360,10 @@ int expl;
 	 */
 	showexpl(pp->p_y, pp->p_x, type);
 	for (pp = Player; pp < End_player; pp++)
-		sendcom(pp, REFRESH);
+		sendcom(pp, REFRESH, 0, 0);
 #ifdef MONITOR
 	for (pp = Monitor; pp < End_monitor; pp++)
-		sendcom(pp, REFRESH);
+		sendcom(pp, REFRESH, 0, 0);
 #endif
 }
 #endif
@@ -378,14 +372,8 @@ int expl;
  * create_shot:
  *	Create a shot with the given properties
  */
-add_shot(type, y, x, face, charge, owner, expl, over)
-int	type;
-int	y, x;
-char	face;
-int	charge;
-PLAYER	*owner;
-int	expl;
-char	over;
+void
+add_shot(int type, int y, int x, char face, int charge, PLAYER *owner, int expl, char over)
 {
 	register BULLET	*bp;
 
@@ -405,15 +393,7 @@ char	over;
 }
 
 BULLET *
-create_shot(type, y, x, face, charge, owner, score, expl, over)
-int	type;
-int	y, x;
-char	face;
-int	charge;
-PLAYER	*owner;
-IDENT	*score;
-int	expl;
-char	over;
+create_shot(int type, int y, int x, char face, int charge, PLAYER *owner, IDENT *score, int expl, char over)
 {
 	register BULLET	*bp;
 
@@ -442,8 +422,8 @@ char	over;
  * cloak:
  *	Turn on or increase length of a cloak
  */
-cloak(pp)
-register PLAYER	*pp;
+void
+cloak(PLAYER *pp)
 {
 	if (pp->p_ammo <= 0) {
 		message(pp, "No more charges");
@@ -470,8 +450,8 @@ register PLAYER	*pp;
  * scan:
  *	Turn on or increase length of a scan
  */
-scan(pp)
-register PLAYER	*pp;
+void
+scan(PLAYER *pp)
 {
 	if (pp->p_ammo <= 0) {
 		message(pp, "No more charges");
@@ -498,11 +478,8 @@ register PLAYER	*pp;
  * pickup:
  *	check whether the object blew up or whether he picked it up
  */
-pickup(pp, y, x, prob, obj)
-register PLAYER	*pp;
-register int	y, x;
-int		prob;
-int		obj;
+void
+pickup(PLAYER *pp, int y, int x, int prob, int obj)
 {
 	register int	req;
 
