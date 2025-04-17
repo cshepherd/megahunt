@@ -179,7 +179,7 @@ int getchr(register FILE *fd)
 
 	FD_ZERO(&readfds);
 	FD_ZERO(&s_readfds);
-	
+
 	driver_mask = fileno(fd);
 	stdin_mask = fileno(stdin);
 	FD_SET(driver_mask, &s_readfds);
@@ -298,7 +298,7 @@ void put_ch(char ch)
 	/* Define terminal capability variables */
 	int AM = 0;  /* Auto margins */
 	int XN = 0;  /* Newline ignored after 80 cols */
-	
+
 	if (!isprint(ch)) {
 		fprintf(stderr, "r,c,ch: %d,%d,%d", cur_row, cur_col, ch);
 		return;
@@ -324,7 +324,7 @@ void hunt_clear_screen(void)
 {
 	register int	i;
 	char *CL = NULL;
-	
+
 	if (blanks[0] == '\0')
 		for (i = 0; i < 80; i++)
 			blanks[i] = ' ';
@@ -351,7 +351,7 @@ void clear_eol(void)
 	extern int COLS;
 	/* Define terminal capability variable */
 	int AM = 0;
-	
+
 	if (CE != NULL)
 		tputs(CE, 1, putchar);
 	else {
@@ -377,18 +377,18 @@ void redraw_screen(void)
 			fprintf(stderr, "Can't create curscr\n");
 			exit(1);
 		}
-		
+
 		/* Copy screen contents into curses window */
 		for (i = 0; i < 24; i++) {
 			mvwaddnstr(curscr, i, 0, screen[i], 80);
 		}
 		first = 0;
 	}
-	
+
 	/* Update cursor position */
 	wmove(curscr, cur_row, cur_col);
 	wrefresh(curscr);
-	
+
 #ifdef	NOCURSES
 	mvcur(cur_row, cur_col, 0, 0);
 	for (i = 0; i < 23; i++) {

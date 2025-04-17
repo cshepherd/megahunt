@@ -572,7 +572,7 @@ void rmnl(char *s)
 {
 
 	register char	*cp;
-	
+
 	cp = strrchr(s, '\n');
 	if (cp != NULL)
 		*cp = '\0';
