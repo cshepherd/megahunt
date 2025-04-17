@@ -18,7 +18,7 @@
 #undef  CTRL
 #define CTRL(x)	('x' & 037)
 
-int		input();
+int		input(void);
 static int	nchar_send;
 static int	in	= FREAD;
 char		screen[24][80], blanks[80];
@@ -46,7 +46,7 @@ static char	ibuf[20];
  *	Play a given game, handling all the curses commands from
  *	the driver.
  */
-playit()
+void playit(void)
 {
 	register FILE		*inf;
 	register int		ch;
@@ -169,8 +169,7 @@ out:
  *	When this routine is called by GETCHR, we already know there are
  *	no characters in the input buffer.
  */
-getchr(fd)
-register FILE	*fd;
+int getchr(register FILE *fd)
 {
 	long	nchar;
 	long	readfds, s_readfds;
@@ -206,7 +205,7 @@ one_more_time:
  * send_stuff:
  *	Send standard input characters to the driver
  */
-send_stuff()
+void send_stuff(void)
 {
 	register int	count;
 	register char	*sp, *nsp;
@@ -253,7 +252,7 @@ send_stuff()
  * quit:
  *	Handle the end of the game when the player dies
  */
-quit()
+int quit(void)
 {
 	register int	explain, ch;
 
@@ -288,8 +287,7 @@ quit()
 	}
 }
 
-put_ch(ch)
-	char	ch;
+void put_ch(char ch)
 {
 	if (!isprint(ch)) {
 		fprintf(stderr, "r,c,ch: %d,%d,%d", cur_row, cur_col, ch);
@@ -306,14 +304,13 @@ put_ch(ch)
 	}
 }
 
-put_str(s)
-	char	*s;
+void put_str(char *s)
 {
 	while (*s)
 		put_ch(*s++);
 }
 
-clear_screen()
+void hunt_clear_screen(void)
 {
 	register int	i;
 
@@ -337,7 +334,7 @@ clear_screen()
 	cur_row = cur_col = 0;
 }
 
-clear_eol()
+void clear_eol(void)
 {
 	if (CE != NULL)
 		tputs(CE, 1, _putchar);
@@ -353,7 +350,7 @@ clear_eol()
 	bcopy(blanks, &screen[cur_row][cur_col], 80 - cur_col);
 }
 
-redraw_screen()
+void redraw_screen(void)
 {
 	register int	i;
 	static int	first = 1;

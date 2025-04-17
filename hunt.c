@@ -43,18 +43,19 @@ static char	name[NAMELEN];
 extern int	cur_row, cur_col, _putchar();
 extern char	*tgoto();
 
+int find_driver(FLAG do_startup);
+void env_init(void);
+
 /*
  * main:
  *	Main program for local process
  */
-main(ac, av)
-int	ac;
-char	**av;
+int main(int ac, char **av)
 {
 	char		*term;
 	extern int	errno;
 	extern int	Otto_mode;
-	int		dumpit(), intr(), sigterm(), sigemt(), tstp();
+	/* signal handlers are defined as void functions in prototypes */
 
 	for (ac--, av++; ac > 0 && av[0][0] == '-'; ac--, av++) {
 		switch (av[0][1]) {
@@ -147,14 +148,14 @@ char	**av;
 		fprintf(stderr, "no terminal type\n");
 		exit(1);
 	}
-	_tty_ch = 0;
+	int _tty_ch = 0;
 	gettmode();
 	setterm(term);
 	noecho();
 	crmode();
 	_puts(TI);
 	_puts(VS);
-	clear_screen();
+	hunt_clear_screen();
 	(void) signal(SIGINT, intr);
 	(void) signal(SIGTERM, sigterm);
 	(void) signal(SIGEMT, sigemt);
@@ -196,7 +197,7 @@ char	**av;
 				break;
 			sleep(1);
 		} while (close(Socket) == 0);
-#else	INTERNET
+#else
 		/*
 		 * set up a socket
 		 */
@@ -241,10 +242,9 @@ char	**av;
 
 #ifdef INTERNET
 #ifdef BROADCAST
-broadcast_vec(s, vector)
-	int			s;		/* socket */
-	struct	sockaddr	**vector;
+int broadcast_vec(int s, struct sockaddr **vector)
 {
+
 	char			if_buf[BUFSIZ];
 	struct	ifconf		ifc;
 	struct	ifreq		*ifr;
@@ -267,9 +267,10 @@ broadcast_vec(s, vector)
 }
 #endif
 
-find_driver(do_startup)
-FLAG	do_startup;
+int find_driver(FLAG do_startup)
 {
+	/* Return 1 to indicate success */
+
 	int			msg;
 	static SOCKET		test;
 	int			test_socket;
@@ -278,7 +279,7 @@ FLAG	do_startup;
 	static			initial = TRUE;
 	static struct in_addr	local_address;
 	register struct hostent	*hp;
-	int			(*oldsigalrm)(), sigalrm();
+	void			(*oldsigalrm)(int);
 	extern int		errno;
 #ifdef BROADCAST
 	static	int		brdc;
@@ -288,7 +289,7 @@ FLAG	do_startup;
 
 	if (Sock_host != NULL) {
 		if (!initial)
-			return;		/* Daemon address already valid */
+			return 1;		/* Daemon address already valid */
 		initial = FALSE;
 		if ((hp = gethostbyname(Sock_host)) == NULL) {
 			leave(1, "Unknown host");
@@ -442,8 +443,9 @@ get_response:
 }
 #endif
 
-start_driver()
+void start_driver(void)
 {
+
 	register int	procid;
 
 #ifdef MONITOR
@@ -491,8 +493,9 @@ start_driver()
  *	We had a bad connection.  For the moment we assume that this
  *	means the game is full.
  */
-bad_con()
+void bad_con(void)
 {
+
 	leave(1, "The game is full.  Sorry.");
 	/* NOTREACHED */
 }
@@ -502,8 +505,9 @@ bad_con()
  *	Handle a core dump signal by not dumping core, just leaving,
  *	so we end up with a core dump from the driver
  */
-dumpit()
+void dumpit(int sig)
 {
+
 	(void) kill(Master_pid, SIGQUIT);
 	(void) chdir("coredump");
 	abort();
@@ -513,8 +517,9 @@ dumpit()
  * sigterm:
  *	Handle a terminate signal
  */
-sigterm()
+void sigterm(int sig)
 {
+
 	leave(0, NULL);
 	/* NOTREACHED */
 }
@@ -524,8 +529,9 @@ sigterm()
  * sigemt:
  *	Handle a emt signal - shouldn't happen on vaxes(?)
  */
-sigemt()
+void sigemt(int sig)
 {
+
 	leave(1, "Unable to start driver.  Try again.");
 	/* NOTREACHED */
 }
@@ -535,7 +541,7 @@ sigemt()
  * sigalrm:
  *	Handle an alarm signal
  */
-sigalrm()
+void sigalrm(int sig)
 {
 	return;
 }
@@ -545,9 +551,9 @@ sigalrm()
  * rmnl:
  *	Remove a '\n' at the end of a string if there is one
  */
-rmnl(s)
-char	*s;
+void rmnl(char *s)
 {
+
 	register char	*cp;
 	char		*rindex();
 
@@ -560,8 +566,9 @@ char	*s;
  * intr:
  *	Handle a interrupt signal
  */
-intr()
+void intr(int sig)
 {
+
 	register int	ch;
 	register int	explained;
 	register int	y, x;
@@ -608,10 +615,9 @@ intr()
  *	Leave the game somewhat gracefully, restoring all current
  *	tty stats.
  */
-leave(eval, mesg)
-int	eval;
-char	*mesg;
+void leave(int eval, char *mesg)
 {
+
 	mvcur(cur_row, cur_col, 23, 0);
 	if (mesg == NULL)
 		clear_eol();
@@ -631,8 +637,9 @@ char	*mesg;
  * tstp:
  *	Handle stop and start signals
  */
-tstp()
+void tstp(int sig)
 {
+
 	static struct sgttyb	tty;
 	int	y, x;
 
@@ -659,8 +666,9 @@ tstp()
 	fflush(stdout);
 }
 
-env_init()
+void env_init(void)
 {
+
 	register int	i;
 	char	*envp, *envname, *s, *index();
 

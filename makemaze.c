@@ -13,7 +13,7 @@
 #define	ISCLEAR(y,x)	(Maze[y][x] == SPACE)
 #define	ODD(n)		((n) & 01)
 
-makemaze()
+void makemaze(void)
 {
 	register char	*sp;
 	register int	y, x;
@@ -47,8 +47,7 @@ int	incr[NDIR][2] = {
 		{0, 1}, {1, 0}, {0, -1}, {-1, 0}
 	};
 
-dig(y, x)
-int	y, x;
+void dig(int y, int x)
 {
 	register int	*dp;
 	register int	*ip;
@@ -71,8 +70,7 @@ int	y, x;
  * candig:
  *	Is it legal to clear this spot?
  */
-candig(y, x)
-register int	y, x;
+int candig(register int y, register int x)
 {
 	register int	i;
 
@@ -101,7 +99,7 @@ register int	y, x;
 	return TRUE;			/* OK */
 }
 
-remap()
+void remap(void)
 {
 	register int	y, x;
 	register char	*sp;

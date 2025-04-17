@@ -18,7 +18,7 @@
  * moveshots:
  *	Move the shots already in the air, taking explosions into account
  */
-moveshots()
+void moveshots(void)
 {
 	register BULLET	*bp, *next;
 	register PLAYER	*pp;
@@ -325,8 +325,7 @@ again:			switch (Maze[y][x]) {
 	return;
 }
 
-save_bullet(bp)
-register BULLET	*bp;
+void save_bullet(register BULLET *bp)
 {
 	bp->b_over = Maze[bp->b_y][bp->b_x];
 	switch (bp->b_over) {
@@ -370,8 +369,7 @@ register BULLET	*bp;
  * chkshot
  *	Handle explosions
  */
-chkshot(bp)
-register BULLET	*bp;
+void chkshot(register BULLET *bp)
 {
 	register int	y, x;
 	register int	dy, dx, absdy;
@@ -466,8 +464,7 @@ register BULLET	*bp;
  * chkslime:
  *	handle slime shot exploding
  */
-chkslime(bp)
-register BULLET	*bp;
+void chkslime(register BULLET *bp)
 {
 	register BULLET	*nbp;
 
@@ -520,9 +517,7 @@ case BLOB:   moveslime(nbp, BLOBSPEED);
  *	move the given slime shot speed times and add it back if
  *	it hasn't fizzled yet
  */
-moveslime(bp, speed)
-register BULLET	*bp;
-register int	speed;
+void moveslime(register BULLET *bp, register int speed)
 {
 	register int	i, j, dirmask, count;
 	register PLAYER	*pp;
@@ -694,8 +689,7 @@ case BLOB:		message(pp, "Your flesh melts!");
  * iswall:
  *	returns whether the given location is a wall
  */
-iswall(y, x)
-register int	y, x;
+int iswall(register int y, register int x)
 {
 	if (y < 0 || x < 0 || y >= HEIGHT || x >= WIDTH)
 		return TRUE;
@@ -724,8 +718,7 @@ register int	y, x;
  * zapshot:
  *	Take a shot out of the air.
  */
-zapshot(blist, obp)
-register BULLET	*blist, *obp;
+void zapshot(register BULLET *blist, register BULLET *obp)
 {
 	register BULLET	*bp;
 	register FLAG	explode;
@@ -748,9 +741,7 @@ register BULLET	*blist, *obp;
  * explshot -
  *	Make all shots at this location blow up
  */
-explshot(blist, y, x)
-register BULLET	*blist;
-register int	y, x;
+void explshot(register BULLET *blist, register int y, register int x)
 {
 	register BULLET	*bp;
 
@@ -766,9 +757,7 @@ register int	y, x;
  * play_at:
  *	Return a pointer to the player at the given location
  */
-PLAYER *
-play_at(y, x)
-register int	y, x;
+PLAYER *play_at(register int y, register int x)
 {
 	register PLAYER	*pp;
 
@@ -785,9 +774,7 @@ register int	y, x;
  *	Return TRUE if the bullet direction faces the opposite direction
  *	of the player in the maze
  */
-opposite(face, dir)
-int	face;
-char	dir;
+int opposite(int face, char dir)
 {
 	switch (face) {
 	  case LEFTS:
@@ -808,9 +795,7 @@ char	dir;
  *	Is there a bullet at the given coordinates?  If so, return
  *	a pointer to the bullet, otherwise return NULL
  */
-BULLET *
-is_bullet(y, x)
-register int	y, x;
+BULLET *is_bullet(register int y, register int x)
 {
 	register BULLET	*bp;
 
@@ -825,9 +810,7 @@ register int	y, x;
  *	change the underlying character of the shots at a location
  *	to the given character.
  */
-fixshots(y, x, over)
-register int	y, x;
-char		over;
+void fixshots(register int y, register int x, char over)
 {
 	register BULLET	*bp;
 
@@ -841,8 +824,7 @@ char		over;
  *	find the underlying character for a bullet when it lands
  *	on another bullet.
  */
-find_under(blist, bp)
-register BULLET	*blist, *bp;
+void find_under(register BULLET *blist, register BULLET *bp)
 {
 	register BULLET	*nbp;
 
@@ -857,8 +839,7 @@ register BULLET	*blist, *bp;
  * mark_player:
  *	mark a player as under a shot
  */
-mark_player(bp)
-register BULLET	*bp;
+void mark_player(register BULLET *bp)
 {
 	register PLAYER	*pp;
 

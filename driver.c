@@ -39,7 +39,7 @@ int	Test_socket;		/* test socket to answer datagrams */
  * main:
  *	The main program.
  */
-main()
+int main(void)
 {
 	register PLAYER	*pp;
 	register int	had_char;

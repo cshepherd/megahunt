@@ -9,6 +9,11 @@
  */
 
 #include	<stdio.h>
+#include	<string.h>
+#include	<stdlib.h>
+#include	<unistd.h>
+#include	<curses.h>
+#include	<term.h>
 #ifndef OLDIPC
 #include	<sgtty.h>
 #include	<sys/types.h>
@@ -310,18 +315,125 @@ extern PLAYER	Monitor[MAXMON], *End_monitor;
 #endif
 
 /*
- * function types
+ * function prototypes
  */
 
-char	*getenv(), *malloc(), *sprintf(), *strcpy(), *strncpy();
+/* System function prototypes */
+/* char *getenv(const char *name);
+   void *malloc(size_t size);
+   int sprintf(char *str, const char *format, ...);
+   char *strcpy(char *dest, const char *src);
+   char *strncpy(char *dest, const char *src, size_t n); */
 
-IDENT	*get_ident();
+/* hunt.c */
+int find_driver(FLAG do_startup);
+void env_init(void);
+void start_driver(void);
+void bad_con(void);
+void dumpit(int sig);
+void sigterm(int sig);
+void sigemt(int sig);
+#ifdef INTERNET
+void sigalrm(int sig);
+#endif
+void rmnl(char *s);
+void intr(int sig);
+void leave(int eval, char *mesg);
+void tstp(int sig);
 
-int	moveshots();
+/* shots.c */
+void moveshots(void);
+void save_bullet(BULLET *bp);
+void chkshot(BULLET *bp);
+#ifdef OOZE
+void chkslime(BULLET *bp);
+void moveslime(BULLET *bp, int speed);
+#endif
+int iswall(int y, int x);
+void zapshot(BULLET *blist, BULLET *obp);
+void explshot(BULLET *blist, int y, int x);
+PLAYER *play_at(int y, int x);
+int opposite(int face, char dir);
+BULLET *is_bullet(int y, int x);
+void fixshots(int y, int x, char over);
+void find_under(BULLET *blist, BULLET *bp);
+void mark_player(BULLET *bp);
 
-BULLET	*is_bullet(), *create_shot();
+/* playit.c */
+void playit(void);
+int getchr(FILE *fd);
+void send_stuff(void);
+int quit(void);
+void put_ch(char ch);
+void put_str(char *s);
+void hunt_clear_screen(void);
+void clear_eol(void);
+void redraw_screen(void);
 
-PLAYER	*play_at();
+/* makemaze.c */
+void makemaze(void);
+void dig(int y, int x);
+int candig(int y, int x);
+void remap(void);
+
+/* expl.c */
+void showexpl(int y, int x, char type);
+void rollexpl(void);
+void remove_wall(int y, int x);
+
+/* driver.c */
+void init(void);
+void bul_alarm(int val);
+void checkdam(PLAYER *ouch, PLAYER *gotcha, IDENT *credit, int amt, char shot_type);
+void zap(PLAYER *pp, FLAG was_player);
+int rand_num(int range);
+int havechar(PLAYER *pp);
+void cleanup(int eval);
+
+/* answer.c */
+void answer(void);
+void stmonitor(PLAYER *pp);
+void stplayer(PLAYER *newpp);
+void rand_face(PLAYER *pp);
+int reached_limit(u_long machine);
+
+/* terminal.c */
+void cgoto(PLAYER *pp, int y, int x);
+void outch(PLAYER *pp, char ch);
+void outstr(PLAYER *pp, char *str, int len);
+void clrscr(PLAYER *pp);
+void ce(PLAYER *pp);
+void ref(PLAYER *pp);
+void sendcom(PLAYER *pp, int command, int arg1, int arg2);
+
+/* execute.c */
+void mon_execute(PLAYER *pp);
+void execute(PLAYER *pp);
+void player_move(PLAYER *pp, int dir);
+void face(PLAYER *pp, int dir);
+void fire(PLAYER *pp, char type);
+void fire_slime(PLAYER *pp, int type, int req, int expl);
+void add_shot(int type, int y, int x, char face, int charge, PLAYER *owner, int expl, char over);
+BULLET *create_shot(int type, int y, int x, char face, int charge, PLAYER *owner, IDENT *score, int expl, char over);
+void cloak(PLAYER *pp);
+void scan(PLAYER *pp);
+void pickup(PLAYER *pp, int y, int x, int prob, int obj);
+
+/* draw.c */
+void drawmaze(PLAYER *pp);
+void drawstatus(PLAYER *pp);
+void look(PLAYER *pp);
+void see(PLAYER *pp, int face);
+void showstat(PLAYER *pp);
+void drawplayer(PLAYER *pp, FLAG draw);
+void message(PLAYER *pp, char *s);
+char translate(char ch);
+
+/* connect.c */
+void do_connect(char *name);
+
+/* other file prototypes */
+IDENT *get_ident(void);
 
 #define check(_pp,_y,_x)  \
 { \

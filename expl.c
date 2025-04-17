@@ -14,9 +14,7 @@
  * showexpl:
  *	Show the explosions as they currently are
  */
-showexpl(y, x, type)
-register int	y, x;
-char		type;
+void showexpl(register int y, register int x, char type)
 {
 	register PLAYER	*pp;
 	register EXPL	*ep;
@@ -88,7 +86,7 @@ char		type;
  *	Roll the explosions over, so the next one in the list is at the
  *	top
  */
-rollexpl()
+void rollexpl(void)
 {
 	register EXPL	*ep;
 	register PLAYER	*pp;
@@ -133,8 +131,7 @@ static	REGEN	*rem_index = removed;
  *		 if there is no space left over, put the a wall at
  *		 the location currently pointed at.
  */
-remove_wall(y, x)
-int	y, x;
+void remove_wall(int y, int x)
 {
 	register REGEN	*r;
 #if defined(MONITOR) || defined(FLY)
