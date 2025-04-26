@@ -10,7 +10,7 @@ I used to play this a lot in the 1990s on SPARCStations running SunOS 4.1. I'm n
 
 It was my great fortune to track down Alan on LinkedIn, and he was happy to provide the source code. Me and Claude AI proceeded to update it from K&R C and termlib, to C99-compliant and ncurses. It now builds on MacOS.
 
-Pull requests and forks are of course always welcome. Note that the `original` branch of the repository has the unmodified source code.
+Pull requests and forks are of course always welcome. Note that the `original` branch of the repository has the unmodified source code (for flux to run on the SS20 running SunOS 4 in his garage).
 
 ## Installation
 
