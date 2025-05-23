@@ -14,13 +14,21 @@
 #include	<errno.h>
 #include	"hunt.h"
 #include	<sys/file.h>
+#ifdef __linux__
+#include	<sys/ioctl.h>
+#include	<termios.h>
+#endif
 
 #undef  CTRL
 #define CTRL(x)	('x' & 037)
 
 int		input(void);
 static int	nchar_send;
+#ifdef __linux__
+static int	in	= TCIFLUSH;
+#else
 static int	in	= FREAD;
+#endif
 char		screen[24][80], blanks[80];
 int		cur_row, cur_col;
 #ifdef OTTO
@@ -137,7 +145,11 @@ void playit(void)
 		  case READY:
 			(void) fflush(stdout);
 			if (nchar_send < 0)
+#ifdef __linux__
+				(void) tcflush(fileno(stdin), TCIFLUSH);
+#else
 				(void) ioctl(fileno(stdin), TIOCFLUSH, &in);
+#endif
 			nchar_send = MAX_SEND;
 #ifndef OTTO
 			(void) GETCHR(inf);

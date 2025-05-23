@@ -13,6 +13,7 @@
 #include	<errno.h>
 #include	<sys/ioctl.h>
 #include	<sys/time.h>
+#include	<time.h>
 
 #ifndef pdp11
 #define	RN	(((Seed = Seed * 11109 + 13849) >> 16) & 0xffff)
@@ -231,8 +232,10 @@ init(void)
 		SO_ACCEPTCONN);
 #endif
 #if defined(INTERNET) && !defined(OLDIPC)
+#ifdef SO_USELOOPBACK
 	if (setsockopt(Socket, SOL_SOCKET, SO_USELOOPBACK, &msg, sizeof msg)<0)
 		perror("setsockopt loopback");
+#endif
 #endif
 #ifndef OLDIPC
 	if (bind(Socket, (struct sockaddr *) &Daemon, DAEMON_SIZE) < 0) {
