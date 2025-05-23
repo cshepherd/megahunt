@@ -16,6 +16,7 @@
 #include	<term.h>
 #ifndef OLDIPC
 #include	<sgtty.h>
+#include	<termios.h>
 #include	<sys/types.h>
 #include	<sys/uio.h>
 #else /* OLDIPC */

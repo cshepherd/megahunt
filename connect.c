@@ -17,11 +17,30 @@ void do_connect(char *name)
 	extern char	*ttyname(int);
 
 	uid = htonl(getuid());
-	(void) write(Socket, (char *) &uid, sizeof uid);
-	(void) write(Socket, name, NAMELEN);
-	(void) strcpy(Buf, ttyname(fileno(stderr)));
-	(void) write(Socket, Buf, NAMELEN);
+	if (write(Socket, (char *) &uid, sizeof uid) < 0) {
+		perror("write uid");
+		return;
+	}
+	if (write(Socket, name, NAMELEN) < 0) {
+		perror("write name");
+		return;
+	}
+	{
+		char *tty = ttyname(fileno(stderr));
+		if (tty == NULL) {
+			strcpy(Buf, "/dev/console");
+		} else {
+			strcpy(Buf, tty);
+		}
+	}
+	if (write(Socket, Buf, NAMELEN) < 0) {
+		perror("write tty");
+		return;
+	}
 #ifdef MONITOR
-	(void) write(Socket, (char *) &Am_monitor, sizeof Am_monitor);
+	if (write(Socket, (char *) &Am_monitor, sizeof Am_monitor) < 0) {
+		perror("write monitor flag");
+		return;
+	}
 #endif
 }

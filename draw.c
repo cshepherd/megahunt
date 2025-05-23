@@ -34,6 +34,8 @@ drawmaze(PLAYER *pp)
 	cgoto(pp, HEIGHT - 1, 0);
 	outstr(pp, pp->p_maze[HEIGHT - 1], WIDTH);
 	drawstatus(pp);
+	ref(pp);
+	(void) fflush(pp->p_output);
 }
 
 /*
@@ -46,7 +48,11 @@ drawstatus(PLAYER *pp)
 	register int	i;
 	register PLAYER	*np;
 
-	(void) sprintf(Buf, "%-13.13s", pp->p_ident->i_name);
+	if (pp->p_ident == NULL) {
+		(void) sprintf(Buf, "%-13.13s", "Unknown");
+	} else {
+		(void) sprintf(Buf, "%-13.13s", pp->p_ident->i_name);
+	}
 	cgoto(pp, STAT_NAME_ROW, STAT_LABEL_COL);
 	outstr(pp, Buf, 13);
 
@@ -86,8 +92,12 @@ drawstatus(PLAYER *pp)
 	cgoto(pp, STAT_PLAY_ROW, STAT_LABEL_COL);
 	outstr(pp, "Player:", 7);
 	for (i = STAT_PLAY_ROW + 1, np = Player; np < End_player; np++) {
-		(void) sprintf(Buf, "%5.2f%c%-10.10s", np->p_ident->i_score,
-			stat_char(np), np->p_ident->i_name);
+		if (np->p_ident == NULL) {
+			(void) sprintf(Buf, "%5.2f%c%-10.10s", 0.0, ' ', "Unknown");
+		} else {
+			(void) sprintf(Buf, "%5.2f%c%-10.10s", np->p_ident->i_score,
+				stat_char(np), np->p_ident->i_name);
+		}
 		cgoto(pp, i++, STAT_NAME_COL);
 		outstr(pp, Buf, STAT_NAME_LEN);
 	}
@@ -96,7 +106,11 @@ drawstatus(PLAYER *pp)
 	cgoto(pp, STAT_MON_ROW, STAT_LABEL_COL);
 	outstr(pp, "Monitor:", 8);
 	for (i = STAT_MON_ROW + 1, np = Monitor; np < End_monitor; np++) {
-		(void) sprintf(Buf, "%5.5s %-10.10s", " ", np->p_ident->i_name);
+		if (np->p_ident == NULL) {
+			(void) sprintf(Buf, "%5.5s %-10.10s", " ", "Unknown");
+		} else {
+			(void) sprintf(Buf, "%5.5s %-10.10s", " ", np->p_ident->i_name);
+		}
 		cgoto(pp, i++, STAT_NAME_COL);
 		outstr(pp, Buf, STAT_NAME_LEN);
 	}

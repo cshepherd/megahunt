@@ -105,4 +105,8 @@ sendcom(PLAYER *pp, int command, int arg1, int arg2)
 		(void) putc(arg1, pp->p_output);
 		break;
 	}
+	/* Debug: Force flush after critical commands */
+	if ((command & 0377) == CLEAR || (command & 0377) == REFRESH) {
+		(void) fflush(pp->p_output);
+	}
 }

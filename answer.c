@@ -21,6 +21,7 @@ answer(void)
 	register PLAYER		*pp;
 	register int		newsock;
 	register FILE		*tmpfd;
+	
 #ifdef MONITOR
 	static FLAG		monitor;
 #endif
@@ -28,6 +29,7 @@ answer(void)
 	static int		socklen;
 	static u_long		machine;
 	static u_long		uid;
+	
 	static SOCKET		sockstruct;
 #ifdef OLDIPC
 	extern SOCKET		Daemon;

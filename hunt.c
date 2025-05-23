@@ -55,6 +55,52 @@ struct sgttyb _tty;
 int _tty_ch = 0;
 char *CM = NULL;
 
+/* Modern terminal handling */
+static struct termios orig_termios;
+static int termios_saved = 0;
+
+void hunt_gettmode(void) {
+    _tty_ch = fileno(stdin);
+    if (tcgetattr(_tty_ch, &orig_termios) == 0) {
+        termios_saved = 1;
+    }
+}
+
+void hunt_setterm(char *term) {
+    /* Terminal capabilities are handled by termcap/terminfo */
+}
+
+void hunt_noecho(void) {
+    struct termios new_termios;
+    if (termios_saved) {
+        new_termios = orig_termios;
+        new_termios.c_lflag &= ~ECHO;
+        tcsetattr(_tty_ch, TCSANOW, &new_termios);
+    }
+}
+
+void hunt_crmode(void) {
+    struct termios new_termios;
+    if (termios_saved) {
+        new_termios = orig_termios;
+        new_termios.c_lflag &= ~(ICANON | ECHO);
+        new_termios.c_cc[VMIN] = 1;
+        new_termios.c_cc[VTIME] = 0;
+        tcsetattr(_tty_ch, TCSANOW, &new_termios);
+    }
+}
+
+void hunt_resetty(void) {
+    if (termios_saved) {
+        tcsetattr(_tty_ch, TCSANOW, &orig_termios);
+    }
+}
+
+int hunt_stty(int fd, struct sgttyb *buf) {
+    /* Legacy function - just return success */
+    return 0;
+}
+
 int find_driver(FLAG do_startup);
 void env_init(void);
 
@@ -162,10 +208,19 @@ int main(int ac, char **av)
 	}
 	int _tty_ch = 0;
 	char *TI, *VS, *VE, *TE;
-	gettmode();
-	setterm(term);
-	noecho();
-	crmode();
+	hunt_gettmode();
+	hunt_setterm(term);
+	hunt_noecho();
+	hunt_crmode();
+	
+	/* Initialize terminal dimensions */
+	setupterm(term, 1, NULL);
+	if (COLS <= 0) COLS = 80;
+	if (LINES <= 0) LINES = 24;
+	
+	/* Initialize cursor motion capability */
+	CM = tgetstr("cm", NULL);
+	
 	TI = tgetstr("ti", NULL);
 	VS = tgetstr("vs", NULL);
 	VE = tgetstr("ve", NULL);
@@ -643,7 +698,7 @@ void leave(int eval, char *mesg)
 		putchar('\n');
 		fflush(stdout);		/* flush in case VE changes pages */
 	} 
-	resetty();
+	hunt_resetty();
 	char *VE = tgetstr("ve", NULL);
 	char *TE = tgetstr("te", NULL);
 	if (VE) _puts(VE);
@@ -673,11 +728,11 @@ void tstp(int sig)
 	if (VE) _puts(VE);
 	if (TE) _puts(TE);
 	(void) fflush(stdout);
-	resetty();
+	hunt_resetty();
 	(void) kill(getpid(), SIGSTOP);
 	(void) signal(SIGTSTP, tstp);
 	_tty = tty;
-	(void) stty(_tty_ch, &_tty);
+	(void) hunt_stty(_tty_ch, &_tty);
 	char *TI = tgetstr("ti", NULL);
 	char *VS = tgetstr("vs", NULL);
 	if (TI) _puts(TI);
@@ -729,11 +784,12 @@ void env_init(void)
 				envp = s + 1;
 			}
 		}
-		if (*envp != '\0')
+		if (*envp != '\0') {
 			if (envname == NULL)
 				envname = envp;
 			else
 				printf("unknown option %s\n", envp);
+		}
 	}
 	if (envname != NULL) {
 		(void) strcpy(name, envname);

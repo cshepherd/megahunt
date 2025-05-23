@@ -39,8 +39,8 @@ static char	otto_face;
  */
 static char	ibuf[20];
 
-/* Modified GETCHR macro to use standard getc instead of direct struct access */
-#define	GETCHR(fd)	(getc(fd))
+/* Modified GETCHR macro to call our custom getchr function for input polling */
+#define	GETCHR(fd)	(getchr(fd))
 
 /*
  * playit:
@@ -64,7 +64,7 @@ void playit(void)
 			perror("fdopen of socket");
 			exit(1);
 		}
-	setbuffer(inf, ibuf, sizeof ibuf);
+	setbuf(inf, NULL);  /* Unbuffered I/O to reduce delay */
 	Master_pid = getw(inf);
 	if (Master_pid == 0 || Master_pid == EOF) {
 		bad_con();
@@ -82,7 +82,16 @@ void playit(void)
 		  case MOVE:
 			y = GETCHR(inf);
 			x = GETCHR(inf);
-			mvcur(cur_row, cur_col, y, x);
+				/* Use terminal capabilities to move cursor */
+			{
+				extern char *CM;
+				if (CM) {
+					char *move_str = tgoto(CM, x, y);
+					if (move_str) {
+						tputs(move_str, 1, putchar);
+					}
+				}
+			}
 			cur_row = y;
 			cur_col = x;
 			break;
@@ -109,6 +118,7 @@ void playit(void)
 			hunt_clear_screen();
 			break;
 		  case REFRESH:
+			redraw_screen();
 			fflush(stdout);
 			break;
 		  case REDRAW:
@@ -294,7 +304,7 @@ int quit(void)
 
 void put_ch(char ch)
 {
-	extern int LINES, COLS;
+	/* LINES and COLS are provided by curses.h */
 	/* Define terminal capability variables */
 	int AM = 0;  /* Auto margins */
 	int XN = 0;  /* Newline ignored after 80 cols */
@@ -305,6 +315,7 @@ void put_ch(char ch)
 	}
 	screen[cur_row][cur_col] = ch;
 	putchar(ch);
+	fflush(stdout);
 	if (++cur_col >= COLS) {
 		if (!AM || XN)
 			putchar('\n');
@@ -323,7 +334,7 @@ void put_str(char *s)
 void hunt_clear_screen(void)
 {
 	register int	i;
-	char *CL = NULL;
+	char *CL = tgetstr("cl", NULL);
 
 	if (blanks[0] == '\0')
 		for (i = 0; i < 80; i++)
@@ -347,8 +358,8 @@ void hunt_clear_screen(void)
 
 void clear_eol(void)
 {
-	char *CE = NULL;
-	extern int COLS;
+	char *CE = tgetstr("ce", NULL);
+	/* COLS is provided by curses.h */
 	/* Define terminal capability variable */
 	int AM = 0;
 
@@ -369,34 +380,33 @@ void clear_eol(void)
 void redraw_screen(void)
 {
 	register int	i;
-	static int	first = 1;
+	extern char *CM;
+	char *CL = tgetstr("cl", NULL);
 
-	if (first) {
-		/* Initialize curscr - modern curses doesn't expose struct fields */
-		if ((curscr = newwin(24, 80, 0, 0)) == NULL) {
-			fprintf(stderr, "Can't create curscr\n");
-			exit(1);
-		}
-
-		/* Copy screen contents into curses window */
-		for (i = 0; i < 24; i++) {
-			mvwaddnstr(curscr, i, 0, screen[i], 80);
-		}
-		first = 0;
+	
+	/* Clear terminal screen (but not screen buffer) */
+	if (CL != NULL) {
+		tputs(CL, LINES, putchar);
 	}
-
-	/* Update cursor position */
-	wmove(curscr, cur_row, cur_col);
-	wrefresh(curscr);
-
-#ifdef	NOCURSES
-	mvcur(cur_row, cur_col, 0, 0);
-	for (i = 0; i < 23; i++) {
-		fwrite(screen[i], sizeof (char), 80, stdout);
-		if (COLS > 80 || (COLS == 80 && !AM))
-			putchar('\n');
+	
+	/* Output each line of the screen buffer */
+	for (i = 0; i < 24; i++) {
+		if (CM) {
+			char *move_str = tgoto(CM, 0, i);
+			if (move_str) {
+				tputs(move_str, 1, putchar);
+			}
+		}
+		fwrite(screen[i], sizeof(char), 80, stdout);
 	}
-	fwrite(screen[23], sizeof (char), 79, stdout);
-	mvcur(23, 79, cur_row, cur_col);
-#endif
+	
+	/* Move cursor to current position */
+	if (CM) {
+		char *move_str = tgoto(CM, cur_col, cur_row);
+		if (move_str) {
+			tputs(move_str, 1, putchar);
+		}
+	}
+	
+	fflush(stdout);
 }
