@@ -12,7 +12,7 @@ It was my great fortune to track down Alan on LinkedIn, and he was happy to prov
 
 ## Current Status
 
-As of May 23, 2025, it appears to work as intended on MacOS Sequoia 15.5. It will probably work elsewhere, but isn't thoroughly tested.
+As of May 23, 2025, it appears to work as intended on MacOS Sequoia 15.5, and Linux 5.10.103 on a Raspberry Pi 4. It will probably work elsewhere, but isn't thoroughly tested.
 
 Pull requests and forks are of course always welcome. Note that the `original` branch of the repository has the unmodified source code (for flux to run on the SS20 running SunOS 4 in his garage).
 
