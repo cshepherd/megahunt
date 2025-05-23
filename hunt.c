@@ -14,6 +14,9 @@
 #include	<signal.h>
 #include	<ctype.h>
 #include	<sys/stat.h>
+#ifdef __linux__
+#include	<termios.h>
+#endif
 
 FLAG	Last_player = FALSE;
 #ifdef MONITOR
@@ -51,7 +54,11 @@ int _puts(const char *str) {
     return 0;
 }
 
+#ifdef __linux__
+struct termios _tty;
+#else
 struct sgttyb _tty;
+#endif
 int _tty_ch = 0;
 char *CM = NULL;
 
@@ -63,6 +70,9 @@ void hunt_gettmode(void) {
     _tty_ch = fileno(stdin);
     if (tcgetattr(_tty_ch, &orig_termios) == 0) {
         termios_saved = 1;
+#ifdef __linux__
+        _tty = orig_termios;
+#endif
     }
 }
 
@@ -96,10 +106,16 @@ void hunt_resetty(void) {
     }
 }
 
+#ifdef __linux__
+int hunt_stty(int fd, struct termios *buf) {
+    return tcsetattr(fd, TCSANOW, buf);
+}
+#else
 int hunt_stty(int fd, struct sgttyb *buf) {
     /* Legacy function - just return success */
     return 0;
 }
+#endif
 
 int find_driver(FLAG do_startup);
 void env_init(void);
@@ -230,7 +246,9 @@ int main(int ac, char **av)
 	hunt_clear_screen();
 	(void) signal(SIGINT, intr);
 	(void) signal(SIGTERM, sigterm);
+#ifdef SIGEMT
 	(void) signal(SIGEMT, sigemt);
+#endif
 	(void) signal(SIGQUIT, dumpit);
 	(void) signal(SIGPIPE, SIG_IGN);
 	(void) signal(SIGTSTP, tstp);
@@ -253,9 +271,11 @@ int main(int ac, char **av)
 			}
 #ifndef OLDIPC
 			msg = 1;
+#ifdef SO_USELOOPBACK
 			if (setsockopt(Socket, SOL_SOCKET, SO_USELOOPBACK,
 			    &msg, sizeof msg) < 0)
 				perror("setsockopt loopback");
+#endif
 #endif
 			errno = 0;
 			if (connect(Socket, (struct sockaddr *) &Daemon,
@@ -550,7 +570,11 @@ void start_driver(void)
 		(void) close(Socket);
 		execl(Driver, "HUNT", NULL);
 		/* only get here if exec failed */
+#ifdef SIGEMT
 		kill(getppid(), SIGEMT);	/* tell mom */
+#else
+		kill(getppid(), SIGUSR1);	/* tell mom */
+#endif
 		_exit(1);
 	}
 	mvcur(cur_row, cur_col, 23, 0);
@@ -713,7 +737,11 @@ void leave(int eval, char *mesg)
 void tstp(int sig)
 {
 
+#ifdef __linux__
+	static struct termios	tty;
+#else
 	static struct sgttyb	tty;
+#endif
 	int	y, x;
 	static int _tty_ch;
 
