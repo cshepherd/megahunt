@@ -89,7 +89,7 @@ hunt:	$(POBJ) pathname.o
 	$(CC) $(LDFLAGS) -o hunt $(POBJ) pathname.o -lcurses -ltermlib
 
 hunt.driver:	$(DOBJ) pathname.o
-	$(CC) $(PROFLAGS) $(LDFLAGS) -o hunt.driver $(DOBJ) pathname.o
+	$(LD) -i $(PROFLAGS) $(LDFLAGS) -o hunt.driver $(DOBJ) pathname.o
 
 #
 # Object file dependencies

@@ -20,6 +20,8 @@
 # define	RN	((Seed = Seed * 11109 + 13849) & 0x7fff)
 # endif pdp11
 
+int cleanup();
+
 int	Seed = 0;
 
 # ifdef CONSTANT_MOVE
