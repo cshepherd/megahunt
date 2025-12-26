@@ -18,6 +18,8 @@
 # undef  CTRL
 # define CTRL(x)	('x' & 037)
 
+extern int _putchar();
+
 int		input();
 static int	nchar_send;
 static int	in	= FREAD;
