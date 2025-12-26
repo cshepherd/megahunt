@@ -16,6 +16,10 @@ As of May 23, 2025, it appears to work as intended on MacOS Sequoia 15.5, and Li
 
 Pull requests and forks are of course always welcome. Note that the `original` branch of the repository has the unmodified source code (for flux to run on the SS20 running SunOS 4 in his garage).
 
+## PDP-11 running 2.11BSD
+
+26-Dec-2025: Use the `2.11bsd/pdp-11` fork to build on a PDP-11 running 2.11BSD, because who doesn't have one of those?
+
 ## Installation
 
 ```bash
